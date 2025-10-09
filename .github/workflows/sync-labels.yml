@@ -1,21 +1,25 @@
-# .github/workflows/sync-labels.yml
-
-name: Sync Labels
+name: Sync Labels from Template
 
 on:
-  workflow_dispatch: # Actions 탭에서 수동으로 실행 가능
+  # Actions 탭에서 "Run workflow" 버튼을 눌러 수동으로 실행할 수 있게 함
+  workflow_dispatch:
 
 jobs:
   sync-labels:
     runs-on: ubuntu-latest
     steps:
+      # 1. 'Chunwol/github-templates' 레포지토리의 main 브랜치 내용을
+      #    'templates' 라는 임시 폴더로 다운로드합니다.
+      - name: Checkout templates repository
+        uses: actions/checkout@v4
+        with:
+          repository: 'Chunwol/github-templates'
+          path: 'templates'
+
+      # 2. 다운로드된 templates 폴더 안의 labels.yml 파일을 읽어서
+      #    현재 레포지토리에 라벨을 동기화(생성/업데이트)합니다.
       - name: Sync Labels
         uses: micnncim/action-label-syncer@v1
         with:
-          # 템플릿 레포지토리의 labels.yml 파일을 사용하도록 경로를 명시
-          manifest: 'Chunwol/github-templates/.github/labels.yml'
-          
-          # YourUsername을 본인 깃허브 아이디로, 
-          # YourTemplateRepo를 템플릿 레포지토리 이름으로 변경해주세요.
-          
+          manifest: 'templates/.github/labels.yml'
           token: ${{ secrets.GITHUB_TOKEN }}
