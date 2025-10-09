@@ -1,7 +1,10 @@
 # .github/workflows/sync-labels.yml
+
 name: Sync Labels
+
 on:
-  workflow_dispatch: # 수동으로 실행할 수 있도록 설정
+  workflow_dispatch: # Actions 탭에서 수동으로 실행 가능
+
 jobs:
   sync-labels:
     runs-on: ubuntu-latest
@@ -9,5 +12,10 @@ jobs:
       - name: Sync Labels
         uses: micnncim/action-label-syncer@v1
         with:
-          repository: 'Chunwol/github-templates' # 템플릿 레포지토리 주소
+          # 템플릿 레포지토리의 labels.yml 파일을 사용하도록 경로를 명시
+          manifest: 'Chunwol/github-templates/.github/labels.yml'
+          
+          # YourUsername을 본인 깃허브 아이디로, 
+          # YourTemplateRepo를 템플릿 레포지토리 이름으로 변경해주세요.
+          
           token: ${{ secrets.GITHUB_TOKEN }}
