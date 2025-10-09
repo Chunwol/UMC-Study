@@ -1,0 +1,53 @@
+# --- 작업 종류 (Type) ---
+- name: "🐛 bug"
+  color: "d73a4a"
+  description: "예상치 못한 문제나 오류"
+
+- name: "✨ feature"
+  color: "a2eeef"
+  description: "새로운 기능 개발"
+
+- name: "⬆️ enhancement"
+  color: "a2eeef"
+  description: "기존 기능 개선"
+
+- name: "📄 documentation"
+  color: "0075ca"
+  description: "문서 관련 작업"
+
+- name: "♻️ refactor"
+  color: "f9d0c4"
+  description: "코드 품질 개선 (기능 변경 없음)"
+
+- name: "🧪 test"
+  color: "f9d0c4"
+  description: "테스트 코드 관련 작업"
+
+- name: "🚀 deploy"
+  color: "0e8a16"
+  description: "배포 관련 작업"
+
+- name: "🤖 ci/cd"
+  color: "0e8a16"
+  description: "CI/CD 파이프라인 관련 작업"
+
+- name: "🧹 chore"
+  color: "cfd3d7"
+  description: "기타 잡다한 작업 (빌드, 설정 등)"
+
+- name: "❓ question"
+  color: "d876e3"
+  description: "질문"
+
+# --- 우선순위 (Priority) ---
+- name: "🚨 priority: high"
+  color: "b60205"
+  description: "높은 우선순위"
+
+- name: "⚠️ priority: medium"
+  color: "fbca04"
+  description: "중간 우선순위"
+
+- name: "🟢 priority: low"
+  color: "0e8a16"
+  description: "낮은 우선순위"
