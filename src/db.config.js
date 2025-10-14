@@ -1,0 +1,49 @@
+import mysql from "mysql2/promise";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const DB_CONFIG = {
+    DB_HOST: process.env.DB_HOST,
+    DB_PORT: process.env.DB_PORT,
+    DB_NAME: process.env.DB_NAME,
+    DB_USERNAME: process.env.DB_USERNAME,
+    DB_PASSWORD: process.env.DB_PASSWORD,
+};
+
+
+
+export const pool = mysql.createPool({
+    host: DB_CONFIG.DB_HOST || "localhost",
+    user: DB_CONFIG.DB_USERNAME || "root",
+    port: DB_CONFIG.DB_PORT || 3306,
+    database: DB_CONFIG.DB_NAME || "umc_9th", // 데이터베이스 이름
+    password: DB_CONFIG.DB_PASSWORD || "root", // 비밀번호
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+});
+
+export const connect = async (exitOnError = false, verbose = false) => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.query("SELECT 1");
+        if (verbose) {
+            console.log('데이터베이스와 성공적으로 연결되었습니다.');
+        }
+    } catch (err) {
+        if (verbose) {
+            console.error('데이터베이스 연결에 실패했습니다:', err);
+        }
+        if (exitOnError) {
+            process.exit(1);
+        }
+        throw err; 
+
+    } finally {
+        if (connection) {
+            connection.release();
+        }
+    }
+};
