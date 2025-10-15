@@ -1,0 +1,37 @@
+{
+  "name": "umc-nodejs",
+  "version": "1.0.0",
+  "description": "UMC 실습",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "dev": "nodemon --exec node src/index.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.0.0",
+    "express-validator": "^7.2.1",
+    "http-status-codes": "^2.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.15.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "imports": {
+    "#Controller/*": "./src/controllers/*",
+    "#Dto/*": "./src/dtos/*",
+    "#Middleware/*": "./src/middlewares/*",
+    "#Repository/*": "./src/repositories/*",
+    "#Service/*": "./src/services/*",
+    "#Util/*": "./src/utils/*",
+    "#Router/*": "./src/routers/*"
+  }
+}
