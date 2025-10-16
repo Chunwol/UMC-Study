@@ -1,6 +1,7 @@
 import { validationResult } from 'express-validator';
 import CustomError from '#Middleware/error/customError.js';
 
+//유효성 검사
 export const checkValidation = (req, res, next) => {
   const errors = validationResult(req);
 

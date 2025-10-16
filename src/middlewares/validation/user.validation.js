@@ -1,6 +1,7 @@
 import { body } from 'express-validator';
 import { email, password, refreshToken } from '#Util/pattern.js';
 
+//회원가입 검증
 export const registerValidation = [
   body('email')
     .exists().withMessage('이메일은 필수입니다.')
@@ -52,6 +53,7 @@ export const registerValidation = [
     .withMessage('favoriteFoodIds는 숫자 배열이어야 합니다.'),
 ];
 
+//로그인 검증
 export const loginValidation = [
   body('email')
     .exists().withMessage('email 필드는 필수입니다.')

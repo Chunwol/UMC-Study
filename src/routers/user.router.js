@@ -1,8 +1,14 @@
 import express from 'express';
-import checkValidation from '#Middleware/validation/validationMiddleware.js';
+
+//Middlewares
+import checkValidation from '#Middleware/validation/validation.middleware.js';
+
+//Controllers
 import { handleUserSignUp, handleUserLogin, handleUserToken } from '#Controller/user.controller.js';
+
+//Validations
 import { registerValidation, loginValidation, refreshTokenValidation  } from '#Middleware/validation/user.validation.js';
-import authMiddleware from '#Middleware/auth.middleware.js';
+import { authMiddleware } from '#Middleware/auth.middleware.js';
 
 const router = express.Router();
 

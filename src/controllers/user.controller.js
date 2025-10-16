@@ -3,6 +3,7 @@ import { bodyToUser, bodyToLogin, bodyToToken } from "../dtos/user.dto.js";
 import { userSignUp, userLogin } from "#Service/user.service.js";
 import { tokenReissue, tokenSign } from "#Service/auth.service.js";
 
+//회원가입
 export const handleUserSignUp = async (req, res, next) => {
   try {
     // console.log("회원가입을 요청했습니다!");
@@ -16,6 +17,7 @@ export const handleUserSignUp = async (req, res, next) => {
   }
 };
 
+//로그인
 export const handleUserLogin = async (req, res, next) => {
   try {
     // console.log("로그인을 요청했습니다!");
@@ -29,6 +31,7 @@ export const handleUserLogin = async (req, res, next) => {
   }
 };
 
+//토큰갱신
 export const handleUserToken = async (req, res, next) => {
   try {
     // console.log("토큰 갱신 요청했습니다!");

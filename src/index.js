@@ -2,7 +2,8 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-
+import path from "path";
+import { fileURLToPath } from 'url';
 import CustomError from '#Middleware/error/customError.js';
 import ErrorMiddleware from '#Middleware/error/errorMiddleware.js';
 import router from '#Router/index.js';
@@ -12,6 +13,8 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(cors({
     origin: process.env.NODE_ENV === 'development' ? '*' : /chunwol\.kro\.kr/,
@@ -24,6 +27,7 @@ app.use(
 );
 
 app.use('/api', router);
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use((req, res, next) => {
   next(new CustomError({ name: 'NOT_FOUND' }));

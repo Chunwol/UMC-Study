@@ -1,3 +1,4 @@
+//상태확인
 const getStatus = (req, res) => {
   res.status(200).send(new Date().toLocaleDateString());
 };

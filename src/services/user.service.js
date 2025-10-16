@@ -6,6 +6,7 @@ import {
 import CustomError from "#Middleware/error/customError.js";
 import bcrypt from "bcrypt";
 
+//회원가입
 export const userSignUp = async (data) => {
   const joinUserId = await addUser({
     email: data.email,
@@ -28,6 +29,7 @@ export const userSignUp = async (data) => {
   return joinUserId;
 };
 
+//로그인
 export const userLogin = async (data) => {
   const user = await getUserIdPwFromEmail(data.email);
   const isPasswordValid = user ? await bcrypt.compare(
