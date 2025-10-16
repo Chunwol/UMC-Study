@@ -3,7 +3,7 @@ import { getRegionIdFromCode } from '#Repository/region.repository.js';
 import bcrypt from 'bcrypt';
 import CustomError from '#Middleware/error/customError.js';
 
-// User 데이터 삽입
+//유저 추가
 export const addUser = async (data) => {
   const conn = await pool.getConnection();
 
@@ -41,7 +41,13 @@ export const addUser = async (data) => {
         null,
       ]
     );
-    const newUserId = result.insertId; // 방금 생성된 사용자의 ID
+    const newUserId = result.insertId;
+
+    const defaultNickname = `user_${newUserId}`;
+    await conn.query(
+        `INSERT INTO profile (user_id, nickname, image_url) VALUES (?, ?, ?);`,
+        [newUserId, defaultNickname, null]
+    );
 
     if (data.terms && data.terms.length > 0) {
       const termsValues = data.terms.map((term) => [
@@ -51,7 +57,7 @@ export const addUser = async (data) => {
       ]);
       await conn.query(
         `INSERT INTO user_term (user_id, term_id, is_agreed) VALUES ?;`,
-        [termsValues] // 2차원 배열을 한 번에 삽입
+        [termsValues]
       );
     }
 
@@ -70,14 +76,12 @@ export const addUser = async (data) => {
   }
 };
 
-// 사용자 정보 얻기
+//유저ID로 유저검색
 export const getUserFromId = async (userId) => {
   const conn = await pool.getConnection();
 
   try {
     const [user] = await conn.query(`SELECT * FROM user WHERE id = ?;`, userId);
-
-    //console.log(user);
 
     if (user.length == 0) {
       return null;
@@ -93,13 +97,12 @@ export const getUserFromId = async (userId) => {
   }
 };
 
+//email로 UserID와PW을 검색
 export const getUserIdPwFromEmail = async (email) => {
   const conn = await pool.getConnection();
 
   try {
     const [user] = await conn.query(`SELECT * FROM user WHERE email = ?;`, email);
-
-    //console.log(user);
 
     if (user.length == 0) {
       return null;
@@ -115,12 +118,11 @@ export const getUserIdPwFromEmail = async (email) => {
   }
 };
 
+//RefreshToken으로 유저ID검색
 export const getUserIdFromToken = async (token) => {
   const conn = await pool.getConnection();
   try {
     const [user] = await conn.query(`SELECT * FROM user WHERE refresh_token = ?;`, token);
-
-    //console.log(user);
 
     if (user.length == 0) {
       return null;
@@ -136,7 +138,24 @@ export const getUserIdFromToken = async (token) => {
   }
 };
 
-// 음식 선호 카테고리 매핑
+//유저ID로 프로필ID검색
+export const getProfileIdFromUserId = async (userId) => {
+    const conn = await pool.getConnection();
+    try {
+        const [rows] = await conn.query(
+            `SELECT id FROM profile WHERE user_id = ?;`,
+            [userId]
+        );
+        return rows.length > 0 ? rows[0].id : null;
+    } catch (err) {
+        console.error(err);
+        throw new CustomError({ name: 'DATABASE_ERROR' });
+    } finally {
+        conn.release();
+    }
+}
+
+//좋아하는 음식 설정
 export const setfavoriteFood = async (userId, foodId) => {
   const conn = await pool.getConnection();
 
@@ -158,6 +177,7 @@ export const setfavoriteFood = async (userId, foodId) => {
   }
 };
 
+//RefreshToken 업데이트
 export const updateRefreshToken = async (userId, refreshToken) => {
   const conn = await pool.getConnection();
 
@@ -181,25 +201,3 @@ export const updateRefreshToken = async (userId, refreshToken) => {
     conn.release();
   }
 };
-
-// // 사용자 선호 카테고리 반환 미완
-// export const getUserFromIdPreferencesByUserId = async (userId) => {
-//   const conn = await pool.getConnection();
-
-//   try {
-//     const [preferences] = await pool.query(
-//       "SELECT ufc.id, ufc.food_category_id, ufc.user_id, fcl.name " +
-//         "FROM user_favor_category ufc JOIN food_category fcl on ufc.food_category_id = fcl.id " +
-//         "WHERE ufc.user_id = ? ORDER BY ufc.food_category_id ASC;",
-//       userId
-//     );
-
-//     return preferences;
-//   } catch (err) {
-//     throw new Error(
-//       `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`
-//     );
-//   } finally {
-//     conn.release();
-//   }
-// };

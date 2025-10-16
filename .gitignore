@@ -1,7 +1,7 @@
 # dependency directories
 node_modules/
-
+uploads/
 # dotenv environment variable files
 .env
 .env.*
-src/utils/*.csv
+*.csv

@@ -73,8 +73,18 @@ const Errors = {
     message: '이미 사용 중인 닉네임입니다.',
     description: '프로필 생성/수정 실패: 닉네임 중복',
   },
+   MISSION_ALREADY_CHALLENGING: {
+    code: 409,
+    message: '이미 도전 중인 미션입니다.',
+    description: '미션 추가 실패: 사용자가 해당 미션을 이미 진행 중임',
+  },
 
   // 500: Internal Server Error (서버 내부 오류)
+  FILE_SAVE_ERROR: {
+    code: 500,
+    message: '파일 저장 중 오류가 발생했습니다.',
+    description: '서버 내부 오류: 파일 시스템에 파일을 쓰는 과정에서 문제 발생',
+  },
   DATABASE_ERROR: {
     code: 500,
     message: '서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',

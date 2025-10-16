@@ -1,6 +1,8 @@
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
 
+//DB연결
+
 dotenv.config();
 
 const DB_CONFIG = {
