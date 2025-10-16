@@ -1,1 +1,22 @@
 ## UMC Study
+
+### ENV Setting
+NODE_ENV= production | development
+PORT= String
+ACCESS_TOKEN_SECRET= String
+REFRESH_TOKEN_SECRET= String
+
+DATABASE_SETTING
+
+DB_HOST= String
+DB_NAME= String
+DB_PORT= String
+DB_USERNAME= String
+DB_PASSWORD= String
+
+PW_ENCRYPTION_SETTING
+
+PW_ENCRYPTION_ALGORITHM= encryption algorithm
+PW_ENCRYPTION_SALTSIZE= String
+PW_ENCRYPTION_ITERATION= String
+PW_ENCRYPTION_SIZE= String
