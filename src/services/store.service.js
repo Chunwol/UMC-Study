@@ -1,8 +1,7 @@
 import { getProfileIdFromUserId } from '#Repository/user.repository.js';
 import { addStoreAndDetails } from '#Repository/store.repository.js';
 import { getRegionIdFromCode } from '#Repository/region.repository.js';
-import { addReviewAndPhotos } from '#Repository/review.repository.js';
-import { addMission, addUserMission } from '#Repository/mission.repository.js';
+import { addReviewAndPhotos, getReviewsByStoreId } from '#Repository/review.repository.js';
 import CustomError from '#Middleware/error/customError.js';
 
 //가게 생성
@@ -44,4 +43,26 @@ export const createReview = async (userId, storeId, reviewData) => {
     });
 
     return newReview;
+};
+
+//가게 리뷰 목록 조회
+export const getStoreReviews = async (storeId, cursor, requestedLimit, sortBy) => {
+    
+    let finalLimit = requestedLimit || 10;
+    if (finalLimit > 30) {
+        finalLimit = 30;
+    }
+    const reviews = await getReviewsByStoreId(storeId, cursor, finalLimit, sortBy);
+
+    let nextCursor = null;
+    if (reviews.length === finalLimit) {
+        const lastReview = reviews[reviews.length - 1];
+        if (sortBy === 'rating') {
+            nextCursor = `${lastReview.starRating}_${lastReview.id}`;
+        } else {
+            nextCursor = Number(lastReview.id);
+        }
+        console.log("Next Cursor: "+nextCursor);
+    }
+    return { reviews, nextCursor, limit: finalLimit };
 };

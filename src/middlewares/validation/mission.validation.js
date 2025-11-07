@@ -1,6 +1,6 @@
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import CustomError from '#Middleware/error/customError.js';
-import { isMissionExist, isMissionChallenging } from '#Repository/mission.repository.js';
+import { isMissionExist, isMissionChallenging, getUserMissionStatus } from '#Repository/mission.repository.js';
 
 //URL의 missionId 검증
 export const validateMissionId = [
@@ -47,6 +47,80 @@ export const checkIsNotChallenging = async (req, res, next) => {
         const isChallenging = await isMissionChallenging(userId, missionId);
         if (isChallenging) {
             throw new CustomError({ name: 'MISSION_ALREADY_CHALLENGING' });
+        }
+        next();
+    } catch (err) {
+        next(err);
+    }
+};
+
+//미션 목록 조회 정렬 기준 검증
+export const validateMissionSortQuery = [
+    query('sortBy')
+        .optional()
+        .isIn(['closingSoon', 'amount']).withMessage("sortBy는 'closingSoon' 또는 'amount'여야 합니다.")
+        .default('closingSoon')
+];
+
+//미션 목록 조회 커서 검증
+export const validateMissionCursorQuery = [
+    query('cursor')
+        .optional()
+        .isString().withMessage('커서(cursor)는 문자열이어야 합니다.')
+        .custom((value, { req }) => {
+            const sortBy = req.query.sortBy || 'closingSoon';
+            const parts = value.split('_');
+
+            if (parts.length !== 2) {
+                throw new Error("커서는 'value1_value2' (예: '값1_값2') 형식이어야 합니다.");
+            }
+
+            const [val1, val2] = parts;
+
+            if (sortBy === 'amount') {
+                const reward = Number(val1);
+                const deadline = new Date(val2);
+                if (isNaN(reward) || isNaN(deadline.getTime())) {
+                    throw new Error("'amount' 정렬 시 커서는 'lastReward_lastDeadline' (예: '10000_ISODateString') 형식이어야 합니다.");
+                }
+            } else {
+                const deadline = new Date(val1);
+                const id = Number(val2);
+                if (isNaN(deadline.getTime()) || isNaN(id)) {
+                    throw new Error("'closingSoon' 정렬 시 커서는 'lastDeadline_lastId' (예: 'ISODateString_101') 형식이어야 합니다.");
+                }
+            }
+            return true;
+        })
+];
+
+//내 미션 상태 검증
+export const validateMyMissionStatusQuery = [
+    query('status')
+        .exists().withMessage('status 쿼리(in-progress 또는 completed)는 필수입니다.')
+        .isIn(['in-progress', 'completed']).withMessage("status는 'in-progress' 또는 'completed'여야 합니다.")
+];
+
+//내 미션 목록 조회 커서 검증
+export const validateMyMissionCursorQuery = [
+    query('cursor')
+        .optional()
+        .isString().withMessage('커서(cursor)는 문자열이어야 합니다.')
+        .matches(/^\d+$/).withMessage('커서(cursor)는 숫자 형식의 문자열이어야 합니다.')
+];
+
+
+export const checkMissionIsInProgress = async (req, res, next) => {
+    try {
+        const { missionId, userId } = req.params;
+        
+        const missionStatus = await getUserMissionStatus(userId, missionId);
+
+        if (!missionStatus) {
+            throw new CustomError({ name: 'MISSION_NOT_CHALLENGING', message: '이 유저는 해당 미션에 도전하지 않았습니다.' });
+        }
+        if (missionStatus.status === true) {
+            throw new CustomError({ name: 'MISSION_ALREADY_COMPLETED' });
         }
         next();
     } catch (err) {

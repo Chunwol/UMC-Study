@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
-import { bodyToStore, bodyToReview, bodyToMission } from '#Dto/store.dto.js';
-import { createStore, createReview } from '#Service/store.service.js';
-import { challengeNewMission, createMission } from '#Service/mission.service.js'
+import { bodyToStore, bodyToReview, bodyToMission, responseForReviews, responseForMissions, responseForMissionComplete } from '#Dto/store.dto.js';
+import { createStore, createReview, getStoreReviews } from '#Service/store.service.js';
+import { challengeNewMission, createMission, getStoreMissions, completeMission } from '#Service/mission.service.js'
 import { saveFile } from '#Service/file.service.js';
 
 //가게 추가
@@ -87,6 +87,51 @@ export const handleChallengeMission = async (req, res, next) => {
             "data": { "userMissionId": Number(result.id) }
         });
 
+    } catch (err) {
+        next(err);
+    }
+};
+
+//가게 리뷰 목록 조회
+export const handleGetStoreReviews = async (req, res, next) => {
+    try {
+        const storeId = parseInt(req.params.storeId, 10);
+        const cursor = req.query.cursor;
+        const limit = Number(req.query.limit);
+        const sortBy = req.query.sortBy;
+        const reviewData = await getStoreReviews(storeId, cursor, limit, sortBy);
+        res.status(StatusCodes.OK).json(responseForReviews(reviewData));
+
+    } catch (err) {
+        next(err);
+    }
+};
+
+//가게 미션 목록 조회
+export const handleGetStoreMissions = async (req, res, next) => {
+    try {
+        const userId = req.user ? req.user.id : -1;
+        const storeId = parseInt(req.params.storeId, 10);
+        const cursor = req.query.cursor;
+        const limit = Number(req.query.limit);
+        const sortBy = req.query.sortBy;
+        const missionsData = await getStoreMissions(userId, storeId, cursor, limit, sortBy);
+        
+        res.status(StatusCodes.OK).json(responseForMissions(missionsData));
+    } catch (err) {
+        next(err);
+    }
+};
+
+//미션 완료 처리
+export const handleCompleteMission = async (req, res, next) => {
+    try {
+        const missionId = req.params.missionId;
+        const userId = req.params.userId;
+
+        const missionCompleteData = await completeMission(Number(userId), Number(missionId));
+        
+        res.status(StatusCodes.OK).json(responseForMissionComplete(missionCompleteData));
     } catch (err) {
         next(err);
     }

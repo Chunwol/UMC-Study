@@ -2,7 +2,9 @@ import {
   addUser,
   getUserIdPwFromEmail,
   setfavoriteFood,
+  getProfileIdFromUserId
 } from "#Repository/user.repository.js";
+import { getReviewsByProfileId } from "#Repository/review.repository.js";
 import CustomError from "#Middleware/error/customError.js";
 import bcrypt from "bcrypt";
 
@@ -41,4 +43,28 @@ export const userLogin = async (data) => {
   }
 
   return user.id;
+};
+
+//내가 작성한 리뷰 목록 조회
+export const getMyReviews = async (userId, cursor, requestedLimit) => {
+
+    const profileId = await getProfileIdFromUserId(userId);
+    if (!profileId) {
+        return { reviews: [], nextCursor: null, limit: requestedLimit || 10 }; 
+    }
+
+    let finalLimit = requestedLimit || 10;
+    if (finalLimit > 30) {
+        finalLimit = 30;
+    }
+
+    const reviews = await getReviewsByProfileId(profileId, cursor, finalLimit);
+
+    let nextCursor = null;
+    if (reviews.length === finalLimit) {
+        const lastReview = reviews[reviews.length - 1];
+        nextCursor = Number(lastReview.id);
+    }
+    
+    return { reviews, nextCursor, limit: finalLimit };
 };
