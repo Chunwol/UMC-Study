@@ -44,7 +44,7 @@ export const responseForReviews = ({ reviews, nextCursor, limit }) => {
         "data": {
             "reviews": formattedReviews,
             "cursor": {
-                "nextCursor": Number(nextCursor),
+                "nextCursor": nextCursor,
                 "pageSize": limit,
                 "hasNextPage": hasNextPage
             }

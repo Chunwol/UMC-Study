@@ -60,8 +60,9 @@ export const getStoreReviews = async (storeId, cursor, requestedLimit, sortBy) =
         if (sortBy === 'rating') {
             nextCursor = `${lastReview.starRating}_${lastReview.id}`;
         } else {
-            nextCursor = lastReview.id;
+            nextCursor = Number(lastReview.id);
         }
+        console.log("Next Cursor: "+nextCursor);
     }
     return { reviews, nextCursor, limit: finalLimit };
 };
