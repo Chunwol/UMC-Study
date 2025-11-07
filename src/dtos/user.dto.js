@@ -26,6 +26,32 @@ export const bodyToToken = (body) => {
   return body.refreshToken; //필수 
 };
 
+export const responseForMyReviews = ({ reviews, nextCursor, limit }) => {
+    const formattedReviews = reviews.map(review => ({
+        reviewId: Number(review.id),
+        storeName: review.store.name,
+        starRating: review.starRating,
+        content: review.content,
+        createdAt: review.createdAt,
+        photos: review.photos.map(photo => photo.link)
+    }));
+
+    const hasNextPage = nextCursor !== null; 
+    
+    return {
+        "status": "success",
+        "data": {
+            "reviews": formattedReviews,
+            "cursor": {
+                "nextCursor": nextCursor,
+                "pageSize": limit,
+                "hasNextPage": hasNextPage
+            }
+        }
+    };
+};
+
+
 // export const responseFromUser = ({ user, favoriteFood }) => {
 //   if (!user) {
 //     return null;
