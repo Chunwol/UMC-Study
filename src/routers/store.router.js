@@ -6,11 +6,12 @@ import { upload } from '#Middleware/upload.middleware.js';
 import checkValidation from '#Middleware/validation/validation.middleware.js';
 
 // Controllers
-import { handleStoreAdd,handleReviewAdd, handleMissionAdd, handleChallengeMission, handleGetStoreReviews, handleGetStoreMissions } from '#Controller/store.controller.js';
+import { handleStoreAdd,handleReviewAdd, handleMissionAdd, handleChallengeMission, handleGetStoreReviews, handleGetStoreMissions, handleCompleteMission } from '#Controller/store.controller.js';
 
 // Validations
 import { addReviewValidation, addStoreValidation, checkStoreExists, validateStoreId, validateReviewCursorQuery, validateLimitQuery, validateSortQuery} from '#Middleware/validation/store.validation.js';
-import { addMissionValidation, checkMissionExists, checkIsNotChallenging,validateMissionId, validateMissionSortQuery, validateMissionCursorQuery } from '#Middleware/validation/mission.validation.js';
+import { validateUserIdParam } from '#Middleware/validation/user.validation.js';
+import { addMissionValidation, checkMissionExists, checkIsNotChallenging,validateMissionId, validateMissionSortQuery, validateMissionCursorQuery, checkMissionIsInProgress } from '#Middleware/validation/mission.validation.js';
 
 const router = express.Router();
 
@@ -76,6 +77,20 @@ router.post('/:storeId/missions/:missionId/challenge',
     checkIsNotChallenging,
     checkValidation,
     handleChallengeMission
+);
+
+// 유저 미션 완료 처리 API
+router.patch('/:storeId/missions/:missionId/users/:userId/complete',
+    authMiddleware,
+    validateStoreId,
+    validateMissionId,
+    validateUserIdParam,
+    checkStoreExists,
+    checkStoreOwnership,
+    checkMissionExists,
+    checkMissionIsInProgress,
+    checkValidation,
+    handleCompleteMission
 );
 
 export default router;

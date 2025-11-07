@@ -1,6 +1,6 @@
 import { body, param, query } from 'express-validator';
 import CustomError from '#Middleware/error/customError.js';
-import { isMissionExist, isMissionChallenging } from '#Repository/mission.repository.js';
+import { isMissionExist, isMissionChallenging, getUserMissionStatus } from '#Repository/mission.repository.js';
 
 //URL의 missionId 검증
 export const validateMissionId = [
@@ -108,3 +108,22 @@ export const validateMyMissionCursorQuery = [
         .isString().withMessage('커서(cursor)는 문자열이어야 합니다.')
         .matches(/^\d+$/).withMessage('커서(cursor)는 숫자 형식의 문자열이어야 합니다.')
 ];
+
+
+export const checkMissionIsInProgress = async (req, res, next) => {
+    try {
+        const { missionId, userId } = req.params;
+        
+        const missionStatus = await getUserMissionStatus(userId, missionId);
+
+        if (!missionStatus) {
+            throw new CustomError({ name: 'MISSION_NOT_CHALLENGING', message: '이 유저는 해당 미션에 도전하지 않았습니다.' });
+        }
+        if (missionStatus.status === true) {
+            throw new CustomError({ name: 'MISSION_ALREADY_COMPLETED' });
+        }
+        next();
+    } catch (err) {
+        next(err);
+    }
+};

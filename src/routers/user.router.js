@@ -2,6 +2,7 @@ import express from 'express';
 
 //Middlewares
 import checkValidation from '#Middleware/validation/validation.middleware.js';
+import { authMiddleware } from '#Middleware/auth.middleware.js';
 
 //Controllers
 import { handleUserSignUp, handleUserLogin, handleUserToken, handleGetMyReviews, handleGetMyMissions } from '#Controller/user.controller.js';
@@ -9,7 +10,6 @@ import { handleUserSignUp, handleUserLogin, handleUserToken, handleGetMyReviews,
 //Validations
 import { registerValidation, loginValidation, refreshTokenValidation, validateMyReviewsCursorQuery, validateLimitQuery  } from '#Middleware/validation/user.validation.js';
 import { validateMyMissionStatusQuery, validateMyMissionCursorQuery } from '#Middleware/validation/mission.validation.js';
-import { authMiddleware } from '#Middleware/auth.middleware.js';
 
 const router = express.Router();
 

@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
-import { bodyToStore, bodyToReview, bodyToMission, responseForReviews, responseForMissions } from '#Dto/store.dto.js';
+import { bodyToStore, bodyToReview, bodyToMission, responseForReviews, responseForMissions, responseForMissionComplete } from '#Dto/store.dto.js';
 import { createStore, createReview, getStoreReviews } from '#Service/store.service.js';
-import { challengeNewMission, createMission, getStoreMissions } from '#Service/mission.service.js'
+import { challengeNewMission, createMission, getStoreMissions, completeMission } from '#Service/mission.service.js'
 import { saveFile } from '#Service/file.service.js';
 
 //가게 추가
@@ -118,6 +118,20 @@ export const handleGetStoreMissions = async (req, res, next) => {
         const missionsData = await getStoreMissions(userId, storeId, cursor, limit, sortBy);
         
         res.status(StatusCodes.OK).json(responseForMissions(missionsData));
+    } catch (err) {
+        next(err);
+    }
+};
+
+//미션 완료 처리
+export const handleCompleteMission = async (req, res, next) => {
+    try {
+        const missionId = req.params.missionId;
+        const userId = req.params.userId;
+
+        const missionCompleteData = await completeMission(Number(userId), Number(missionId));
+        
+        res.status(StatusCodes.OK).json(responseForMissionComplete(missionCompleteData));
     } catch (err) {
         next(err);
     }

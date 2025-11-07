@@ -77,3 +77,17 @@ export const responseForMissions = ({ missions, nextCursor, limit }) => {
         }
     };
 };
+
+export const responseForMissionComplete = ({ updatedUserMission, rewardAmount }) => {
+    return {
+        "status": "success",
+        "data": {
+            "userMissionId": Number(updatedUserMission.id),
+            "userId": Number(updatedUserMission.userId),
+            "missionId": Number(updatedUserMission.missionId),
+            "status": "completed",
+            "rewardGranted": rewardAmount,
+            "completedAt": updatedUserMission.updatedAt
+        }
+    };
+};

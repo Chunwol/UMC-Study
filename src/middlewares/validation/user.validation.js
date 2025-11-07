@@ -1,4 +1,4 @@
-import { body, query } from 'express-validator';
+import { body, query, param } from 'express-validator';
 import { email, password, refreshToken } from '#Util/pattern.js';
 
 //회원가입 검증
@@ -86,5 +86,12 @@ export const validateLimitQuery = [
     query('limit')
         .optional()
         .isInt({ min: 1 }).withMessage('limit은 1 이상의 정수여야 합니다.')
+        .toInt()
+];
+
+//유저 ID 파라미터 검증
+export const validateUserIdParam = [
+    param('userId')
+        .isInt({ min: 1 }).withMessage('유저 ID(userId)는 1 이상의 숫자여야 합니다.')
         .toInt()
 ];
