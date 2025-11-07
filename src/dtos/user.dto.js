@@ -51,6 +51,35 @@ export const responseForMyReviews = ({ reviews, nextCursor, limit }) => {
     };
 };
 
+export const responseForMyMissions = ({ userMissions, nextCursor, limit }) => {
+    const formattedMissions = userMissions.map(userMission => ({
+        userMissionId: Number(userMission.id),
+        status: userMission.status ? 'completed' : 'in-progress',
+        missionDetails: {
+            missionId: Number(userMission.mission.id),
+            storeId: Number(userMission.mission.store.id),
+            reward: userMission.mission.reward,
+            description: userMission.mission.description,
+            deadline: userMission.mission.deadline,
+            storeName: userMission.mission.store.name
+        },
+        challengedAt: userMission.createdAt
+    }));
+
+    const hasNextPage = nextCursor !== null; 
+    
+    return {
+        "status": "success",
+        "data": {
+            "missions": formattedMissions,
+            "cursor": {
+                "nextCursor": nextCursor,
+                "pageSize": limit,
+                "hasNextPage": hasNextPage
+            }
+        }
+    };
+};
 
 // export const responseFromUser = ({ user, favoriteFood }) => {
 //   if (!user) {

@@ -1,4 +1,4 @@
-import { addMission, addUserMission, getMissionsByStoreId } from '#Repository/mission.repository.js';
+import { addMission, addUserMission, getMissionsByStoreId, getMissionsByUserIdAndStatus } from '#Repository/mission.repository.js';
 
 //미션 생성
 export const createMission = async (storeId, missionData) => {
@@ -34,4 +34,22 @@ export const getStoreMissions = async (userId, storeId, cursor, requestedLimit, 
         }
     }
     return { missions, nextCursor, limit: finalLimit };
+};
+
+//내가 도전한 미션 목록 조회
+export const getMyMissions = async (userId, status, cursor, requestedLimit) => {
+    
+    let finalLimit = requestedLimit || 10;
+    if (finalLimit > 30) {
+        finalLimit = 30;
+    }
+
+    const userMissions = await getMissionsByUserIdAndStatus(userId, status, cursor, finalLimit);
+
+    let nextCursor = null;
+    if (userMissions.length === finalLimit) {
+        const lastUserMission = userMissions[userMissions.length - 1];
+        nextCursor = Number(lastUserMission.id);
+    }
+    return { userMissions, nextCursor, limit: finalLimit };
 };

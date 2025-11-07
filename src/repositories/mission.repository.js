@@ -156,3 +156,50 @@ export const getMissionsByStoreId = async (userId, storeId, cursor, limit, sortB
         throw new CustomError({ name: 'DATABASE_ERROR' });
     }
 };
+
+//유저별 미션 목록 조회
+export const getMissionsByUserIdAndStatus = async (userId, status, cursor, limit) => {
+    try {
+        const now = new Date();
+        
+        let whereConditions = {
+            userId: userId,
+            status: status
+        };
+
+        if (cursor) {
+            whereConditions.id = { lt: Number(cursor) };
+        }
+
+        if (status === false) {
+            whereConditions.mission = {
+                deadline: {
+                    gt: now
+                }
+            };
+        }
+
+        const userMissions = await prisma.userMission.findMany({
+            where: whereConditions,
+            include: {
+                mission: {
+                    include: {
+                        store: {
+                            select: { id: true, name: true }
+                        }
+                    }
+                }
+            },
+            orderBy: {
+                id: 'desc'
+            },
+            take: limit
+        });
+        
+        return userMissions;
+
+    } catch (err) {
+        console.error(err);
+        throw new CustomError({ name: 'DATABASE_ERROR' });
+    }
+};

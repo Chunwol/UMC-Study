@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
-import { bodyToUser, bodyToLogin, bodyToToken, responseForMyReviews } from "../dtos/user.dto.js";
+import { bodyToUser, bodyToLogin, bodyToToken, responseForMyReviews, responseForMyMissions } from "../dtos/user.dto.js";
 import { userSignUp, userLogin, getMyReviews } from "#Service/user.service.js";
+import { getMyMissions } from "#Service/mission.service.js";
 import { tokenReissue, tokenSign } from "#Service/auth.service.js";
 
 //회원가입
@@ -51,9 +52,25 @@ export const handleGetMyReviews = async (req, res, next) => {
         const cursor = req.query.cursor;
         const limit = Number(req.query.limit);
 
-        const result = await getMyReviews(userId, cursor, limit);
+        const reviewsData = await getMyReviews(userId, cursor, limit);
         
-        res.status(StatusCodes.OK).json(responseForMyReviews(result));
+        res.status(StatusCodes.OK).json(responseForMyReviews(reviewsData));
+    } catch (err) {
+        next(err);
+    }
+};
+
+//내가 도전한 미션 목록 조회
+export const handleGetMyMissions = async (req, res, next) => {
+    try {
+        const userId = req.user.id; 
+        const { cursor, limit, status } = req.query;
+
+        const isCompleted = (status === 'completed');
+
+        const MissionsData = await getMyMissions(userId, isCompleted, cursor, limit);
+        
+        res.status(StatusCodes.OK).json(responseForMyMissions(MissionsData));
     } catch (err) {
         next(err);
     }

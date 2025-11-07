@@ -93,3 +93,18 @@ export const validateMissionCursorQuery = [
             return true;
         })
 ];
+
+//내 미션 상태 검증
+export const validateMyMissionStatusQuery = [
+    query('status')
+        .exists().withMessage('status 쿼리(in-progress 또는 completed)는 필수입니다.')
+        .isIn(['in-progress', 'completed']).withMessage("status는 'in-progress' 또는 'completed'여야 합니다.")
+];
+
+//내 미션 목록 조회 커서 검증
+export const validateMyMissionCursorQuery = [
+    query('cursor')
+        .optional()
+        .isString().withMessage('커서(cursor)는 문자열이어야 합니다.')
+        .matches(/^\d+$/).withMessage('커서(cursor)는 숫자 형식의 문자열이어야 합니다.')
+];
