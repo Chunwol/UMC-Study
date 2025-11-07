@@ -1,6 +1,13 @@
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 import CustomError from '#Middleware/error/customError.js';
 import { isMissionExist, isMissionChallenging } from '#Repository/mission.repository.js';
+
+//URL의 missionId 검증
+export const validateMissionId = [
+    param('missionId')
+        .isInt({ min: 1 }).withMessage('미션 ID(missionId)는 1 이상의 숫자여야 합니다.')
+        .toInt()
+];
 
 //미션 생성 검증
 export const addMissionValidation = [

@@ -1,109 +1,98 @@
-import { pool } from "../db.config.js";
+import { prisma } from "../db.config.js";
 import CustomError from '#Middleware/error/customError.js';
+import { Prisma } from '@prisma/client';
 
 //가게 생성
 export const addStoreAndDetails = async (data) => {
-  const conn = await pool.getConnection();
+  const { coreData, photos, hours } = data;
+
   try {
-    await conn.beginTransaction();
+    const newStore = await prisma.$transaction(async (tx) => {
+      
+      const createdStore = await tx.store.create({
+        data: {
+          userId: coreData.userId,
+          regionId: coreData.regionId,
+          name: coreData.name,
+          industry: coreData.industry,
+          addressDetail: coreData.addressDetail
+        }
+      });
 
-    const { coreData, photos, hours } = data;
+      if (photos && photos.length > 0) {
+        const photoData = photos.map(link => ({
+          storeId: createdStore.id,
+          link: link
+        }));
+        await tx.storePhoto.createMany({
+          data: photoData
+        });
+      }
 
-    const [storeResult] = await conn.query(
-      `INSERT INTO store (user_id, region_id, name, industry, address_detail) VALUES (?, ?, ?, ?, ?);`,
-      [
-        coreData.userId,
-        coreData.regionId,
-        coreData.name,
-        coreData.industry,
-        coreData.addressDetail,
-      ]
-    );
-    const newStoreId = storeResult.insertId;
-
-    if (photos && photos.length > 0) {
-      const photoValues = photos.map(link => [newStoreId, link]);
-      await conn.query(
-        `INSERT INTO store_photo (store_id, link) VALUES ?;`,
-        [photoValues]
-      );
-    }
-
-    if (hours && hours.length > 0) {
-        const hourValues = hours.map(h => [newStoreId, h.day_of_week, h.open_time, h.close_time]);
-        await conn.query(
-            `INSERT INTO store_hours (store_id, day_of_week, open_time, close_time) VALUES ?;`,
-            [hourValues]
-        );
-    }
-
-    await conn.commit();
+      if (hours && hours.length > 0) {
+        const hourData = hours.map(h => ({
+          storeId: createdStore.id,
+          dayOfWeek: h.day_of_week,
+          openTime: new Date(`1970-01-01T${h.open_time}:00Z`),
+          closeTime: new Date(`1970-01-01T${h.close_time}:00Z`)
+        }));
+        await tx.storeHours.createMany({
+          data: hourData
+        });
+      }
+      
+      return createdStore;
+    });
     
-    return { id: newStoreId, ...coreData };
+    return newStore;
 
   } catch (err) {
-    await conn.rollback();
-    if (err.code === 'ER_DUP_ENTRY') {
-        throw new CustomError({ name: 'BAD_REQUEST', message: '해당 사용자는 이미 가게를 등록했습니다.' });
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      throw new CustomError({ name: 'BAD_REQUEST', message: '해당 사용자는 이미 가게를 등록했습니다.' });
     }
     console.error(err);
     throw new CustomError({ name: 'DATABASE_ERROR' });
-  } finally {
-    conn.release();
   }
 };
 
 //가게 존재여부 확인
 export const isStoreExist = async (storeId) => {
-    const conn = await pool.getConnection();
-    try {
-        const [rows] = await conn.query(
-            `SELECT EXISTS(SELECT 1 FROM store WHERE id = ?) as isExist;`,
-            storeId
-        );
-        return rows[0].isExist;
-    } catch (err) {
-        console.error(err);
-        throw new CustomError({ name: 'DATABASE_ERROR' });
-    } finally {
-        conn.release();
-    }
+  try {
+    const count = await prisma.store.count({
+      where: { id: parseInt(storeId, 10) }
+    });
+    return count > 0;
+  } catch (err) {
+    console.error(err);
+    throw new CustomError({ name: 'DATABASE_ERROR' });
+  }
 };
 
 //유저ID로 가게ID검색
 export const getOwnerIdFromStoreId = async (storeId) => {
-    const conn = await pool.getConnection();
-    try {
-        const [rows] = await conn.query(
-            `SELECT user_id FROM store WHERE id = ?;`,
-            [storeId]
-        );
-        return rows.length > 0 ? rows[0].user_id : null;
-    } catch (err) {
-        console.error(err);
-        throw new CustomError({ name: 'DATABASE_ERROR' });
-    } finally {
-        conn.release();
-    }
+  try {
+    const store = await prisma.store.findUnique({
+      where: { id: parseInt(storeId, 10) },
+      select: { userId: true }
+    });
+    return store ? store.userId : null;
+  } catch (err) {
+    console.error(err);
+    throw new CustomError({ name: 'DATABASE_ERROR' });
+  }
 }
 
 //별점 매기기
-export const updateStoreStarRating = async (storeId, conn) => {
-    const connection = conn || await pool.getConnection();
-    try {
-        await connection.query(
-            `UPDATE store s
-             SET s.star_rating = COALESCE((SELECT AVG(sr.star_rating) FROM store_review sr WHERE sr.store_id = s.id), 0.0)
-             WHERE s.id = ?;`,
-            [storeId]
-        );
-        
-    } catch (err) {
-        console.error(err);
-        throw new CustomError({ name: 'DATABASE_ERROR', message: '가게 별점 업데이트 중 오류가 발생했습니다.' });
-    } finally {
-        if (!conn) {
-            connection.release();
-        }
-    }
+export const updateStoreStarRating = async (storeId, txClient) => {
+  const client = txClient || prisma;
+  try {
+    await client.$executeRaw(
+      Prisma.sql`UPDATE store s
+                 SET s.star_rating = COALESCE((SELECT AVG(sr.star_rating) FROM store_review sr WHERE sr.store_id = s.id), 0.0)
+                 WHERE s.id = ${storeId};`
+    );
+  } catch (err) {
+    console.error(err);
+    throw new CustomError({ name: 'DATABASE_ERROR', message: '가게 별점 업데이트 중 오류가 발생했습니다.' });
+  }
 };
