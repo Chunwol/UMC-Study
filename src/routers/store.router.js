@@ -1,16 +1,16 @@
 import express from 'express';
 
 // Middlewares
-import { authMiddleware, checkStoreOwnership } from '#Middleware/auth.middleware.js';
+import { authMiddleware, optionalAuthMiddleware, checkStoreOwnership } from '#Middleware/auth.middleware.js';
 import { upload } from '#Middleware/upload.middleware.js';
 import checkValidation from '#Middleware/validation/validation.middleware.js';
 
 // Controllers
-import { handleStoreAdd,handleReviewAdd, handleMissionAdd, handleChallengeMission, handleGetStoreReviews } from '#Controller/store.controller.js';
+import { handleStoreAdd,handleReviewAdd, handleMissionAdd, handleChallengeMission, handleGetStoreReviews, handleGetStoreMissions } from '#Controller/store.controller.js';
 
 // Validations
-import { addReviewValidation, addStoreValidation, checkStoreExists, validateStoreId, validateCursorQuery, validateLimitQuery, validateSortQuery} from '#Middleware/validation/store.validation.js';
-import { addMissionValidation, checkMissionExists, checkIsNotChallenging,validateMissionId } from '#Middleware/validation/mission.validation.js';
+import { addReviewValidation, addStoreValidation, checkStoreExists, validateStoreId, validateReviewCursorQuery, validateLimitQuery, validateSortQuery} from '#Middleware/validation/store.validation.js';
+import { addMissionValidation, checkMissionExists, checkIsNotChallenging,validateMissionId, validateMissionSortQuery, validateMissionCursorQuery } from '#Middleware/validation/mission.validation.js';
 
 const router = express.Router();
 
@@ -18,11 +18,23 @@ const router = express.Router();
 router.get('/:storeId/reviews',
     validateStoreId,
     checkStoreExists,
-    validateCursorQuery,
+    validateReviewCursorQuery,
     validateLimitQuery,
     validateSortQuery,
     checkValidation,
     handleGetStoreReviews
+);
+
+//특정 가게 미션 목록 조회 API
+router.get('/:storeId/missions',
+    optionalAuthMiddleware,
+    validateStoreId,
+    checkStoreExists,
+    validateMissionCursorQuery,
+    validateLimitQuery,
+    validateMissionSortQuery,
+    checkValidation,
+    handleGetStoreMissions
 );
 
 // 가게 추가 API

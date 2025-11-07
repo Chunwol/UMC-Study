@@ -51,3 +51,29 @@ export const responseForReviews = ({ reviews, nextCursor, limit }) => {
         }
     };
 };
+
+export const responseForMissions = ({ missions, nextCursor, limit }) => {
+    const formattedMissions = missions.map(mission => ({
+        missionId: Number(mission.id),
+        storeId: Number(mission.storeId),
+        reward: mission.reward,
+        description: mission.description,
+        deadline: mission.deadline,
+        createdAt: mission.createdAt,
+        isChallenging: mission.userMissions && mission.userMissions.length > 0
+    }));
+
+    const hasNextPage = nextCursor !== null; 
+    
+    return {
+        "status": "success",
+        "data": {
+            "missions": formattedMissions,
+            "cursor": {
+                "nextCursor": nextCursor,
+                "pageSize": limit,
+                "hasNextPage": hasNextPage
+            }
+        }
+    };
+};

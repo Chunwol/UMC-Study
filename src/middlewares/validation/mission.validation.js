@@ -1,4 +1,4 @@
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import CustomError from '#Middleware/error/customError.js';
 import { isMissionExist, isMissionChallenging } from '#Repository/mission.repository.js';
 
@@ -53,3 +53,43 @@ export const checkIsNotChallenging = async (req, res, next) => {
         next(err);
     }
 };
+
+//미션 목록 조회 정렬 기준 검증
+export const validateMissionSortQuery = [
+    query('sortBy')
+        .optional()
+        .isIn(['closingSoon', 'amount']).withMessage("sortBy는 'closingSoon' 또는 'amount'여야 합니다.")
+        .default('closingSoon')
+];
+
+//미션 목록 조회 커서 검증
+export const validateMissionCursorQuery = [
+    query('cursor')
+        .optional()
+        .isString().withMessage('커서(cursor)는 문자열이어야 합니다.')
+        .custom((value, { req }) => {
+            const sortBy = req.query.sortBy || 'closingSoon';
+            const parts = value.split('_');
+
+            if (parts.length !== 2) {
+                throw new Error("커서는 'value1_value2' (예: '값1_값2') 형식이어야 합니다.");
+            }
+
+            const [val1, val2] = parts;
+
+            if (sortBy === 'amount') {
+                const reward = Number(val1);
+                const deadline = new Date(val2);
+                if (isNaN(reward) || isNaN(deadline.getTime())) {
+                    throw new Error("'amount' 정렬 시 커서는 'lastReward_lastDeadline' (예: '10000_ISODateString') 형식이어야 합니다.");
+                }
+            } else {
+                const deadline = new Date(val1);
+                const id = Number(val2);
+                if (isNaN(deadline.getTime()) || isNaN(id)) {
+                    throw new Error("'closingSoon' 정렬 시 커서는 'lastDeadline_lastId' (예: 'ISODateString_101') 형식이어야 합니다.");
+                }
+            }
+            return true;
+        })
+];

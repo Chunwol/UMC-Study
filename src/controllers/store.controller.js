@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
-import { bodyToStore, bodyToReview, bodyToMission, responseForReviews } from '#Dto/store.dto.js';
+import { bodyToStore, bodyToReview, bodyToMission, responseForReviews, responseForMissions } from '#Dto/store.dto.js';
 import { createStore, createReview, getStoreReviews } from '#Service/store.service.js';
-import { challengeNewMission, createMission } from '#Service/mission.service.js'
+import { challengeNewMission, createMission, getStoreMissions } from '#Service/mission.service.js'
 import { saveFile } from '#Service/file.service.js';
 
 //가게 추가
@@ -92,7 +92,7 @@ export const handleChallengeMission = async (req, res, next) => {
     }
 };
 
-//가게 리뷰 불러오기
+//가게 리뷰 목록 조회
 export const handleGetStoreReviews = async (req, res, next) => {
     try {
         const storeId = parseInt(req.params.storeId, 10);
@@ -102,6 +102,22 @@ export const handleGetStoreReviews = async (req, res, next) => {
         const reviewData = await getStoreReviews(storeId, cursor, limit, sortBy);
         res.status(StatusCodes.OK).json(responseForReviews(reviewData));
 
+    } catch (err) {
+        next(err);
+    }
+};
+
+//가게 미션 목록 조회
+export const handleGetStoreMissions = async (req, res, next) => {
+    try {
+        const userId = req.user ? req.user.id : -1;
+        const storeId = parseInt(req.params.storeId, 10);
+        const cursor = req.query.cursor;
+        const limit = Number(req.query.limit);
+        const sortBy = req.query.sortBy;
+        const missionsData = await getStoreMissions(userId, storeId, cursor, limit, sortBy);
+        
+        res.status(StatusCodes.OK).json(responseForMissions(missionsData));
     } catch (err) {
         next(err);
     }

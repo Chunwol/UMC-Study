@@ -75,3 +75,84 @@ export const addUserMission = async (userId, missionId) => {
         throw new CustomError({ name: 'DATABASE_ERROR' });
     }
 };
+
+//가게별 미션 목록 조회
+export const getMissionsByStoreId = async (userId, storeId, cursor, limit, sortBy) => {
+    try {
+        const now = new Date();
+
+        let whereConditions = {
+            storeId: storeId,
+            deadline: { gt: now }
+        };
+
+        let orderByConditions;
+
+        if (sortBy === 'amount') {
+            orderByConditions = [
+                { reward: 'desc' },
+                { deadline: 'asc' }
+            ];
+
+            if (cursor) {
+                const [lastReward, lastDeadlineStr] = cursor.split('_');
+                const lastRewardNum = Number(lastReward);
+                const lastDeadline = new Date(lastDeadlineStr);
+
+                whereConditions.OR = [
+                    {
+                        reward: { lt: lastRewardNum }
+                    },
+                    {
+                        reward: lastRewardNum,
+                        deadline: { gt: lastDeadline }
+                    }
+                ];
+            }
+
+        } else {
+            orderByConditions = [
+                { deadline: 'asc' },
+                { id: 'desc' }
+            ];
+
+            if (cursor) {
+                const [lastDeadlineStr, lastId] = cursor.split('_');
+                const lastDeadline = new Date(lastDeadlineStr);
+                const lastIdNum = Number(lastId);
+
+                whereConditions.OR = [
+                    {
+                        deadline: { gt: lastDeadline }
+                    },
+                    {
+                        deadline: lastDeadline,
+                        id: { lt: lastIdNum }
+                    }
+                ];
+            }
+        }
+
+        const missions = await prisma.mission.findMany({
+            where: whereConditions,
+            orderBy: orderByConditions,
+            take: limit,
+            include: {
+                userMissions: {
+                    where: {
+                        userId: userId 
+                    },
+                    select: {
+                        id: true 
+                    }
+                }
+            }
+        });
+
+        return missions;
+
+    } catch (err) {
+        console.error(err);
+        throw new CustomError({ name: 'DATABASE_ERROR' });
+    }
+};
