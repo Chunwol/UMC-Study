@@ -74,14 +74,37 @@ export const checkStoreExists = async (req, res, next) => {
 };
 
 
-//리뷰 목록 조회 쿼리 검증
-export const validateCursorQuery = [
+export const validateReviewCursorQuery = [
     query('cursor')
         .optional()
-        .isString().withMessage('커서(cursor)는 문자열이어야 합니다.') // ID(숫자) 또는 '별점_ID'(문자열)
+        .isString().withMessage('커서(cursor)는 문자열이어야 합니다.')
+        .custom((value, { req }) => {
+            const sortBy = req.query.sortBy || 'latest'; 
+            
+            if (sortBy === 'rating') {
+                const parts = value.split('_');
+                
+                if (parts.length !== 2) {
+                    throw new Error("'rating' 정렬 시 커서는 'lastRating_lastId' (예: '5_100') 형식이어야 합니다.");
+                }
+                
+                const lastRating = Number(parts[0]);
+                const lastId = Number(parts[1]);
+
+                if (isNaN(lastRating) || isNaN(lastId)) {
+                    throw new Error("'rating' 정렬 시 커서 값(별점, ID)은 숫자여야 합니다.");
+                }
+
+            } else {
+                if (isNaN(Number(value))) {
+                    throw new Error("'latest' 정렬 시 커서는 'lastId' (예: '100') 형식의 숫자 문자열이어야 합니다.");
+                }
+            }
+            return true;
+        })
 ];
 
-//리뷰 목록 조회 제한 수 검증
+//조회 제한 수 검증
 export const validateLimitQuery = [
     query('limit')
         .optional()
