@@ -32,6 +32,27 @@ const user = await getUserFromId(decoded.userId);
   }
 };
 
+//선택적 인증 미들웨어
+export const optionalAuthMiddleware = async (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+        return next();
+    }
+
+  try {
+    const decoded = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+const user = await getUserFromId(decoded.userId);
+
+    if (!user) {
+        return next();
+    }
+    req.user = user;
+    return next();
+  } catch (error) {
+    return next();
+  }
+};
+
 //가게 주인 확인
 export const checkStoreOwnership = async (req, res, next) => {
     try {
