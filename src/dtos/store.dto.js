@@ -26,3 +26,28 @@ export const bodyToMission = (body) => {
         deadline: new Date(body.deadline)
     };
 };
+
+export const responseForReviews = ({ reviews, nextCursor, limit }) => {
+    const formattedReviews = reviews.map(review => ({
+        reviewId: Number(review.id),
+        authorNickname: review.profile.nickname,
+        starRating: review.starRating,
+        content: review.content,
+        createdAt: review.createdAt,
+        photos: review.photos.map(photo => photo.link)
+    }));
+
+    const hasNextPage = nextCursor !== null; 
+    
+    return {
+        "status": "success",
+        "data": {
+            "reviews": formattedReviews,
+            "cursor": {
+                "nextCursor": Number(nextCursor),
+                "pageSize": limit,
+                "hasNextPage": hasNextPage
+            }
+        }
+    };
+};

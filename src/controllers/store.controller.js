@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
-import { bodyToStore, bodyToReview, bodyToMission } from '#Dto/store.dto.js';
-import { createStore, createReview } from '#Service/store.service.js';
+import { bodyToStore, bodyToReview, bodyToMission, responseForReviews } from '#Dto/store.dto.js';
+import { createStore, createReview, getStoreReviews } from '#Service/store.service.js';
 import { challengeNewMission, createMission } from '#Service/mission.service.js'
 import { saveFile } from '#Service/file.service.js';
 
@@ -86,6 +86,21 @@ export const handleChallengeMission = async (req, res, next) => {
             "status": "success",
             "data": { "userMissionId": Number(result.id) }
         });
+
+    } catch (err) {
+        next(err);
+    }
+};
+
+//가게 리뷰 불러오기
+export const handleGetStoreReviews = async (req, res, next) => {
+    try {
+        const storeId = parseInt(req.params.storeId, 10);
+        const cursor = req.query.cursor;
+        const limit = Number(req.query.limit);
+        const sortBy = req.query.sortBy;
+        const reviewData = await getStoreReviews(storeId, cursor, limit, sortBy);
+        res.status(StatusCodes.OK).json(responseForReviews(reviewData));
 
     } catch (err) {
         next(err);

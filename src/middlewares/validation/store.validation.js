@@ -1,4 +1,4 @@
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import CustomError from '#Middleware/error/customError.js';
 import { isStoreExist } from '#Repository/store.repository.js';
 
@@ -72,3 +72,27 @@ export const checkStoreExists = async (req, res, next) => {
         next(err);
     }
 };
+
+
+//리뷰 목록 조회 쿼리 검증
+export const validateCursorQuery = [
+    query('cursor')
+        .optional()
+        .isString().withMessage('커서(cursor)는 문자열이어야 합니다.') // ID(숫자) 또는 '별점_ID'(문자열)
+];
+
+//리뷰 목록 조회 제한 수 검증
+export const validateLimitQuery = [
+    query('limit')
+        .optional()
+        .isInt({ min: 1 }).withMessage('limit은 1 이상의 정수여야 합니다.')
+        .toInt()
+];
+
+//리뷰 목록 조회 정렬 기준 검증
+export const validateSortQuery = [
+    query('sortBy')
+        .optional()
+        .isIn(['latest', 'rating']).withMessage("sortBy는 'latest' 또는 'rating'이어야 합니다.")
+        .default('latest')
+];

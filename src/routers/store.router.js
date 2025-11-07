@@ -6,13 +6,24 @@ import { upload } from '#Middleware/upload.middleware.js';
 import checkValidation from '#Middleware/validation/validation.middleware.js';
 
 // Controllers
-import { handleStoreAdd,handleReviewAdd, handleMissionAdd, handleChallengeMission } from '#Controller/store.controller.js';
+import { handleStoreAdd,handleReviewAdd, handleMissionAdd, handleChallengeMission, handleGetStoreReviews } from '#Controller/store.controller.js';
 
 // Validations
-import { addReviewValidation, addStoreValidation, checkStoreExists, validateStoreId } from '#Middleware/validation/store.validation.js';
+import { addReviewValidation, addStoreValidation, checkStoreExists, validateStoreId, validateCursorQuery, validateLimitQuery, validateSortQuery} from '#Middleware/validation/store.validation.js';
 import { addMissionValidation, checkMissionExists, checkIsNotChallenging,validateMissionId } from '#Middleware/validation/mission.validation.js';
 
 const router = express.Router();
+
+//특정 가게 리뷰 목록 조회 API
+router.get('/:storeId/reviews',
+    validateStoreId,
+    checkStoreExists,
+    validateCursorQuery,
+    validateLimitQuery,
+    validateSortQuery,
+    checkValidation,
+    handleGetStoreReviews
+);
 
 // 가게 추가 API
 router.post('/',
