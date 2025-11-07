@@ -1,0 +1,257 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+model Region {
+  id           BigInt   @id @default(autoincrement())
+  code         String   @unique @db.VarChar(10)
+  city         String   @db.VarChar(100)
+  district     String   @db.VarChar(100)
+  neighborhood String   @db.VarChar(100)
+  createdAt    DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.DateTime(0)
+
+  users  User[]
+  stores Store[]
+
+  @@map("region")
+}
+
+model Food {
+  id            BigInt         @id @default(autoincrement())
+  name          String         @db.VarChar(15)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.DateTime(0)
+  userFavorites UserFavorite[]
+
+  @@map("food")
+}
+
+model Term {
+  id           BigInt     @id @default(autoincrement())
+  type         String?    @db.VarChar(15)
+  version      String?    @db.VarChar(20)
+  isRequired   Boolean    @map("is_required")
+  content      String?    @db.Text
+  effectiveAt  DateTime?  @map("effective_at") @db.DateTime(0)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.DateTime(0)
+  userTerms    UserTerm[]
+
+  @@map("term")
+}
+
+model User {
+  id            BigInt     @id @default(autoincrement())
+  regionId      BigInt     @map("region_id")
+  name          String     @db.VarChar(15)
+  gender        Gender
+  birthday      DateTime   @db.Date
+  point         Int?       @default(0)
+  addressDetail String?    @map("address_detail") @db.VarChar(100)
+  email         String     @unique @db.VarChar(64)
+  password      String     @db.VarChar(255)
+  cellPhone     String?    @map("cell_phone") @db.VarChar(15)
+  refreshToken  String?    @map("refresh_token") @db.VarChar(255)
+  isVerified    Boolean?   @default(false) @map("is_verified")
+  verifiedAt    DateTime?  @map("verified_at") @db.DateTime(0)
+  inactivedAt   DateTime?  @map("inactived_at") @db.DateTime(0)
+  createdAt     DateTime   @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt     DateTime   @updatedAt @map("updated_at") @db.DateTime(0)
+
+  region        Region         @relation(fields: [regionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  profile       Profile?
+  store         Store?
+  inquiries     Inquiry[]
+  userMissions  UserMission[]
+  userTerms     UserTerm[]
+  userFavorites UserFavorite[]
+
+  @@map("user")
+}
+
+model Profile {
+  id        BigInt        @id @default(autoincrement())
+  userId    BigInt        @unique @map("user_id")
+  nickname  String        @unique @db.VarChar(15)
+  imageUrl  String?       @map("image_url") @db.Text
+  createdAt DateTime      @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime      @updatedAt @map("updated_at") @db.DateTime(0)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  reviews   StoreReview[]
+
+  @@map("profile")
+}
+
+model Store {
+  id            BigInt       @id @default(autoincrement())
+  userId        BigInt       @unique @map("user_id")
+  regionId      BigInt       @map("region_id")
+  name          String       @db.VarChar(30)
+  industry      String?      @db.VarChar(30)
+  starRating    Float?       @default(0.0) @map("star_rating") @db.Double
+  addressDetail String?      @map("address_detail") @db.VarChar(100)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.DateTime(0)
+
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  region        Region       @relation(fields: [regionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  missions      Mission[]
+  reviews       StoreReview[]
+  photos        StorePhoto[]
+  hours         StoreHours[]
+
+  @@map("store")
+}
+
+model Mission {
+  id            BigInt        @id @default(autoincrement())
+  storeId       BigInt        @map("store_id")
+  reward        Int?
+  description   String?       @db.Text
+  deadline      DateTime?     @db.DateTime(0)
+  createdAt     DateTime      @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.DateTime(0)
+
+  store         Store         @relation(fields: [storeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userMissions  UserMission[]
+
+  @@map("mission")
+}
+
+model StoreReview {
+  id          BigInt        @id @default(autoincrement())
+  profileId   BigInt        @map("profile_id")
+  storeId     BigInt        @map("store_id")
+  starRating  Float         @map("star_rating") @db.Double
+  content     String?       @db.Text
+  createdAt   DateTime      @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.DateTime(0)
+
+  profile     Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  store       Store         @relation(fields: [storeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  photos      ReviewPhoto[]
+
+  @@map("store_review")
+}
+
+model Inquiry {
+  id        BigInt         @id @default(autoincrement())
+  userId    BigInt         @map("user_id")
+  title     String         @db.VarChar(100)
+  content   String         @db.Text
+  category  String?        @db.VarChar(50)
+  status    String?        @default("PENDING") @db.VarChar(15)
+  createdAt DateTime       @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime       @updatedAt @map("updated_at") @db.DateTime(0)
+
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  photos    InquiryPhoto[]
+
+  @@map("inquiry")
+}
+
+model UserMission {
+  id        BigInt   @id @default(autoincrement())
+  missionId BigInt   @map("mission_id")
+  userId    BigInt   @map("user_id")
+  status    Boolean? @default(false)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(0)
+
+  mission   Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([userId, missionId]) // DB 중복 방지
+  @@map("user_mission")
+}
+
+model UserTerm {
+  id        BigInt    @id @default(autoincrement())
+  userId    BigInt    @map("user_id")
+  termId    BigInt    @map("term_id")
+  isAgreed  Boolean?  @map("is_agreed")
+  agreedAt  DateTime? @map("agreed_at") @db.DateTime(0)
+  revokedAt DateTime? @map("revoked_at") @db.DateTime(0)
+  createdAt DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  term      Term      @relation(fields: [termId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("user_term")
+}
+
+model UserFavorite {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  foodId    BigInt   @map("food_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(0)
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  food      Food     @relation(fields: [foodId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("user_favorite")
+}
+
+model ReviewPhoto {
+  id        BigInt   @id @default(autoincrement())
+  reviewId  BigInt   @map("review_id")
+  link      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(0)
+
+  review    StoreReview @relation(fields: [reviewId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("review_photo")
+}
+
+model InquiryPhoto {
+  id        BigInt   @id @default(autoincrement())
+  inquiryId BigInt   @map("inquiry_id")
+  link      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(0)
+
+  inquiry   Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("inquiry_photo")
+}
+
+model StorePhoto {
+  id        BigInt   @id @default(autoincrement())
+  storeId   BigInt   @map("store_id")
+  link      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(0)
+
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("store_photo")
+}
+
+model StoreHours {
+  id         BigInt    @id @default(autoincrement())
+  storeId    BigInt    @map("store_id")
+  dayOfWeek  Int?      @map("day_of_week") @db.TinyInt
+  openTime   DateTime? @map("open_time") @db.Time
+  closeTime  DateTime? @map("close_time") @db.Time
+  createdAt  DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.DateTime(0)
+
+  store      Store     @relation(fields: [storeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("store_hours")
+}

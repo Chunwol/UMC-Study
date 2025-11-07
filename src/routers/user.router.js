@@ -12,16 +12,25 @@ import { authMiddleware } from '#Middleware/auth.middleware.js';
 
 const router = express.Router();
 
-router.post('/signup', registerValidation);
-router.post('/login', loginValidation);
-router.post('/token', refreshTokenValidation);
+// 회원가입 API
+router.post('/signup',
+    registerValidation,
+    checkValidation,
+    handleUserSignUp
+);
 
-router.use(checkValidation);
+// 로그인 API
+router.post('/login',
+    loginValidation,
+    checkValidation,
+    handleUserLogin
+);
 
-router.post('/signup', handleUserSignUp);
-router.post('/login', handleUserLogin);
-router.post('/token', handleUserToken);
-
-router.use(authMiddleware);
+// 토큰 갱신 API
+router.post('/token',
+    refreshTokenValidation,
+    checkValidation,
+    handleUserToken
+);
 
 export default router;

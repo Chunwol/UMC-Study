@@ -5,7 +5,7 @@ export const bodyToUser = (body) => {
     email: body.email.trim(), //필수 
     password: body.password, //필수 
     name: body.name.trim(), // 필수
-    gender: body.gender, // 필수
+    gender: body.gender.toUpperCase(), // 필수
     birthday, // 필수
     addressCode: body.addressCode, //필수
     addressDetail: body.addressDetail || "", //선택 
