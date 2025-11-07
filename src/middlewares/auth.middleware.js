@@ -12,11 +12,12 @@ export const authMiddleware = async (req, res, next) => {
 
   try {
     const decoded = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const user = await getUserFromId(decoded.userId);
-    if (!user || user.length === 0) {
+const user = await getUserFromId(decoded.userId);
+
+    if (!user) {
         return next(new CustomError({ name: 'USER_NOT_FOUND' }));
     }
-    req.user = user[0];
+    req.user = user;
     return next();
   } catch (error) {
     switch (error.name) {

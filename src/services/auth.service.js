@@ -6,7 +6,7 @@ import CustomError from '#Middleware/error/customError.js';
 //토큰 생성
 export const tokenSign = async (userId) => {
   const refreshToken = crypto.randomBytes(40).toString('hex');
-  const accessToken = jwt.sign({userId:userId}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '24h' });
+  const accessToken = jwt.sign({userId:Number(userId)}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '24h' });
   await updateRefreshToken(userId, refreshToken);
   return {accessToken, refreshToken};
 };

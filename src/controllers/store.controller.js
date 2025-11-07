@@ -22,7 +22,7 @@ export const handleStoreAdd = async (req, res, next) => {
 
     res.status(StatusCodes.CREATED).json({
         "status": "success",
-        "data": { "storeId": newStore.id }
+        "data": { "storeId": Number(newStore.id) }
     });
   } catch (err) {
     next(err);
@@ -48,7 +48,7 @@ export const handleReviewAdd = async (req, res, next) => {
 
         res.status(StatusCodes.CREATED).json({
             "status": "success",
-            "data": { "reviewId": newReview.id }
+            "data": { "reviewId": Number(newReview.id) }
         });
 
     } catch (err) {
@@ -66,7 +66,7 @@ export const handleMissionAdd = async (req, res, next) => {
 
         res.status(StatusCodes.CREATED).json({
             "status": "success",
-            "data": { "missionId": newMission.id }
+            "data": { "missionId": Number(newMission.id) }
         });
 
     } catch (err) {
@@ -84,7 +84,7 @@ export const handleChallengeMission = async (req, res, next) => {
 
         res.status(StatusCodes.CREATED).json({
             "status": "success",
-            "data": { "userMissionId": result.id }
+            "data": { "userMissionId": Number(result.id) }
         });
 
     } catch (err) {

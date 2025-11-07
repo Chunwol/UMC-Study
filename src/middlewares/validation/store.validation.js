@@ -1,6 +1,13 @@
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 import CustomError from '#Middleware/error/customError.js';
 import { isStoreExist } from '#Repository/store.repository.js';
+
+// URL의 storeId 검증
+export const validateStoreId = [
+    param('storeId')
+        .isInt({ min: 1 }).withMessage('가게 ID(storeId)는 1 이상의 숫자여야 합니다.')
+        .toInt()
+];
 
 //가게 생성 검증
 export const addStoreValidation = [
