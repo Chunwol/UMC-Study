@@ -40,14 +40,11 @@ export const responseForReviews = ({ reviews, nextCursor, limit }) => {
     const hasNextPage = nextCursor !== null; 
     
     return {
-        "status": "success",
-        "data": {
-            "reviews": formattedReviews,
-            "cursor": {
-                "nextCursor": nextCursor,
-                "pageSize": limit,
-                "hasNextPage": hasNextPage
-            }
+        "reviews": formattedReviews,
+        "cursor": {
+            "nextCursor": nextCursor,
+            "pageSize": limit,
+            "hasNextPage": hasNextPage
         }
     };
 };
@@ -66,28 +63,22 @@ export const responseForMissions = ({ missions, nextCursor, limit }) => {
     const hasNextPage = nextCursor !== null; 
     
     return {
-        "status": "success",
-        "data": {
-            "missions": formattedMissions,
-            "cursor": {
-                "nextCursor": nextCursor,
-                "pageSize": limit,
-                "hasNextPage": hasNextPage
-            }
+        "missions": formattedMissions,
+        "cursor": {
+            "nextCursor": nextCursor,
+            "pageSize": limit,
+            "hasNextPage": hasNextPage
         }
     };
 };
 
 export const responseForMissionComplete = ({ updatedUserMission, rewardAmount }) => {
     return {
-        "status": "success",
-        "data": {
-            "userMissionId": Number(updatedUserMission.id),
-            "userId": Number(updatedUserMission.userId),
-            "missionId": Number(updatedUserMission.missionId),
-            "status": "completed",
-            "rewardGranted": rewardAmount,
-            "completedAt": updatedUserMission.updatedAt
-        }
+        "userMissionId": Number(updatedUserMission.id),
+        "userId": Number(updatedUserMission.userId),
+        "missionId": Number(updatedUserMission.missionId),
+        "status": "completed",
+        "rewardGranted": rewardAmount,
+        "completedAt": updatedUserMission.updatedAt
     };
 };

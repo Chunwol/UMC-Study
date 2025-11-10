@@ -39,14 +39,11 @@ export const responseForMyReviews = ({ reviews, nextCursor, limit }) => {
     const hasNextPage = nextCursor !== null; 
     
     return {
-        "status": "success",
-        "data": {
-            "reviews": formattedReviews,
-            "cursor": {
-                "nextCursor": nextCursor,
-                "pageSize": limit,
-                "hasNextPage": hasNextPage
-            }
+        "reviews": formattedReviews,
+        "cursor": {
+            "nextCursor": nextCursor,
+            "pageSize": limit,
+            "hasNextPage": hasNextPage
         }
     };
 };
@@ -69,14 +66,11 @@ export const responseForMyMissions = ({ userMissions, nextCursor, limit }) => {
     const hasNextPage = nextCursor !== null; 
     
     return {
-        "status": "success",
-        "data": {
-            "missions": formattedMissions,
-            "cursor": {
-                "nextCursor": nextCursor,
-                "pageSize": limit,
-                "hasNextPage": hasNextPage
-            }
+        "missions": formattedMissions,
+        "cursor": {
+            "nextCursor": nextCursor,
+            "pageSize": limit,
+            "hasNextPage": hasNextPage
         }
     };
 };

@@ -26,7 +26,7 @@ export const handleUserLogin = async (req, res, next) => {
     const userId = await userLogin(bodyToLogin(req.body));
     const tokens = await tokenSign(userId);
 
-    res.status(StatusCodes.OK).json({ "status": "success", data: tokens });
+    res.status(StatusCodes.OK).success(tokens);
   } catch (err) {
     next(err);
   }
@@ -39,7 +39,7 @@ export const handleUserToken = async (req, res, next) => {
     // console.log("body:", req.body);
     const tokens = await tokenReissue(bodyToToken(req.body));
 
-    res.status(StatusCodes.OK).json({ "status": "success", data: tokens });
+    res.status(StatusCodes.OK).success(tokens);
   } catch (err) {
     next(err);
   }
@@ -54,7 +54,7 @@ export const handleGetMyReviews = async (req, res, next) => {
 
         const reviewsData = await getMyReviews(userId, cursor, limit);
         
-        res.status(StatusCodes.OK).json(responseForMyReviews(reviewsData));
+        res.status(StatusCodes.OK).success(responseForMyReviews(reviewsData));
     } catch (err) {
         next(err);
     }
@@ -70,7 +70,7 @@ export const handleGetMyMissions = async (req, res, next) => {
 
         const MissionsData = await getMyMissions(userId, isCompleted, cursor, limit);
         
-        res.status(StatusCodes.OK).json(responseForMyMissions(MissionsData));
+        res.status(StatusCodes.OK).success(responseForMyMissions(MissionsData));
     } catch (err) {
         next(err);
     }

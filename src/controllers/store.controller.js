@@ -20,10 +20,7 @@ export const handleStoreAdd = async (req, res, next) => {
     const finalStoreData = { ...storeData, photoUrls };
     const newStore = await createStore(userId, finalStoreData);
 
-    res.status(StatusCodes.CREATED).json({
-        "status": "success",
-        "data": { "storeId": Number(newStore.id) }
-    });
+    res.status(StatusCodes.CREATED).success({"storeId": Number(newStore.id)})
   } catch (err) {
     next(err);
   }
@@ -45,12 +42,7 @@ export const handleReviewAdd = async (req, res, next) => {
         const finalReviewData = { ...reviewData, photoUrls };
         const newReview = await createReview(userId, storeId, finalReviewData);
 
-
-        res.status(StatusCodes.CREATED).json({
-            "status": "success",
-            "data": { "reviewId": Number(newReview.id) }
-        });
-
+        res.status(StatusCodes.CREATED).success({ "reviewId": Number(newReview.id)});
     } catch (err) {
         next(err);
     }
@@ -64,10 +56,7 @@ export const handleMissionAdd = async (req, res, next) => {
 
         const newMission = await createMission(storeId, missionData);
 
-        res.status(StatusCodes.CREATED).json({
-            "status": "success",
-            "data": { "missionId": Number(newMission.id) }
-        });
+        res.status(StatusCodes.CREATED).success({"missionId": Number(newMission.id)});
 
     } catch (err) {
         next(err);
@@ -82,11 +71,7 @@ export const handleChallengeMission = async (req, res, next) => {
 
         const result = await challengeNewMission(userId, missionId);
 
-        res.status(StatusCodes.CREATED).json({
-            "status": "success",
-            "data": { "userMissionId": Number(result.id) }
-        });
-
+        res.status(StatusCodes.CREATED).success({"userMissionId": Number(result.id)});
     } catch (err) {
         next(err);
     }
@@ -100,8 +85,7 @@ export const handleGetStoreReviews = async (req, res, next) => {
         const limit = Number(req.query.limit);
         const sortBy = req.query.sortBy;
         const reviewData = await getStoreReviews(storeId, cursor, limit, sortBy);
-        res.status(StatusCodes.OK).json(responseForReviews(reviewData));
-
+        res.status(StatusCodes.OK).success(responseForReviews(reviewData));
     } catch (err) {
         next(err);
     }
@@ -117,7 +101,7 @@ export const handleGetStoreMissions = async (req, res, next) => {
         const sortBy = req.query.sortBy;
         const missionsData = await getStoreMissions(userId, storeId, cursor, limit, sortBy);
         
-        res.status(StatusCodes.OK).json(responseForMissions(missionsData));
+        res.status(StatusCodes.OK).success(responseForMissions(missionsData));
     } catch (err) {
         next(err);
     }
@@ -131,7 +115,7 @@ export const handleCompleteMission = async (req, res, next) => {
 
         const missionCompleteData = await completeMission(Number(userId), Number(missionId));
         
-        res.status(StatusCodes.OK).json(responseForMissionComplete(missionCompleteData));
+        res.status(StatusCodes.OK).success(responseForMissionComplete(missionCompleteData));
     } catch (err) {
         next(err);
     }

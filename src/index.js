@@ -8,6 +8,7 @@ import CustomError from '#Middleware/error/customError.js';
 import ErrorMiddleware from '#Middleware/error/errorMiddleware.js';
 import router from '#Router/index.js';
 import { connect } from './db.config.js';
+import morgan from 'morgan';
 
 dotenv.config();
 
@@ -25,12 +26,21 @@ app.use(
     extended: true,
   })
 );
+app.use(morgan('dev')); 
+app.use(cookieParser()); 
 
 app.use('/api', router);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use((req, res, next) => {
   next(new CustomError({ name: 'NOT_FOUND' }));
+});
+
+app.use((req, res, next) => {
+  res.success = (success) => {
+    return res.json({ resultType: "SUCCESS", error: null, success });
+  };
+  next();
 });
 
 app.use(ErrorMiddleware);
