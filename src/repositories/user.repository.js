@@ -55,6 +55,17 @@ export const addUser = async (data) => {
         });
       }
 
+      if (data.favoriteFoodIds && data.favoriteFoodIds.length > 0) {
+        const favoriteFoodData = data.favoriteFoodIds.map(foodId => ({
+          userId: createdUser.id,
+          foodId: foodId
+        }));
+
+        await tx.userFavorite.createMany({
+          data: favoriteFoodData
+        });
+      }
+
       return createdUser;
     });
 
@@ -127,21 +138,21 @@ export const getProfileIdFromUserId = async (userId) => {
     }
 }
 
-//좋아하는 음식 설정
-export const setfavoriteFood = async (userId, foodId) => {
-  try {
-    await prisma.userFavorite.create({
-      data: {
-        userId: userId,
-        foodId: foodId
-      }
-    });
-    return;
-  } catch (err) {
-    console.error(err);
-    throw new CustomError({ name: 'DATABASE_ERROR' });
-  }
-};
+// //좋아하는 음식 설정(미사용)
+// export const setfavoriteFood = async (userId, foodId) => {
+//   try {
+//     await prisma.userFavorite.create({
+//       data: {
+//         userId: userId,
+//         foodId: foodId
+//       }
+//     });
+//     return;
+//   } catch (err) {
+//     console.error(err);
+//     throw new CustomError({ name: 'DATABASE_ERROR' });
+//   }
+// };
 
 //RefreshToken 업데이트
 export const updateRefreshToken = async (userId, refreshToken) => {

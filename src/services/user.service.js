@@ -1,4 +1,4 @@
-import { addUser, getUserIdPwFromEmail, setfavoriteFood } from "#Repository/user.repository.js";
+import { addUser, getUserIdPwFromEmail } from "#Repository/user.repository.js";
 import CustomError from "#Middleware/error/customError.js";
 import bcrypt from "bcrypt";
 
@@ -7,22 +7,20 @@ export const userSignUp = async (data) => {
   
   const hashedPassword = await bcrypt.hash(data.password, 10);
 
-  const joinUserId = await addUser({
+const joinUserId = await addUser({
     email: data.email,
-    hashedPassword,
+    password: hashedPassword,
     name: data.name,
     gender: data.gender,
     birthday: data.birthday,
     addressCode: data.addressCode,
-    addressDetail: data.addressDetail
+    addressDetail: data.addressDetail,
+    terms: data.terms,
+    favoriteFoodIds: data.favoriteFoodIds
   });
 
   if (!joinUserId) {
     throw new CustomError({ name: 'EMAIL_ALREADY_EXISTS' });
-  }
-
-  for (const favoriteFood of data.favoriteFoodIds || []) {
-    await setfavoriteFood(joinUserId, favoriteFood);
   }
 
   return joinUserId;
