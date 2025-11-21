@@ -1,6 +1,5 @@
 import { body, param, query } from 'express-validator';
 import CustomError from '#Middleware/error/customError.js';
-import { isMissionExist, isMissionChallenging, getUserMissionStatus } from '#Repository/mission.repository.js';
 
 //URL의 missionId 검증
 export const validateMissionId = [
@@ -24,35 +23,6 @@ export const addMissionValidation = [
         .exists().withMessage('미션 마감일은 필수입니다.')
         .isISO8601().withMessage('날짜 형식(YYYY-MM-DDTHH:mm:ss.sssZ)이 올바르지 않습니다.'),
 ];
-
-//미션 존재여부 확인
-export const checkMissionExists = async (req, res, next) => {
-    try {
-        const missionId = req.params.missionId;
-        const exists = await isMissionExist(missionId);
-        if (!exists) {
-            throw new CustomError({ name: 'MISSION_NOT_FOUND' });
-        }
-        next();
-    } catch (err) {
-        next(err);
-    }
-};
-
-//미션 도전중인지 확인
-export const checkIsNotChallenging = async (req, res, next) => {
-    try {
-        const userId = req.user.id;
-        const missionId = req.params.missionId;
-        const isChallenging = await isMissionChallenging(userId, missionId);
-        if (isChallenging) {
-            throw new CustomError({ name: 'MISSION_ALREADY_CHALLENGING' });
-        }
-        next();
-    } catch (err) {
-        next(err);
-    }
-};
 
 //미션 목록 조회 정렬 기준 검증
 export const validateMissionSortQuery = [
@@ -100,30 +70,3 @@ export const validateMyMissionStatusQuery = [
         .exists().withMessage('status 쿼리(in-progress 또는 completed)는 필수입니다.')
         .isIn(['in-progress', 'completed']).withMessage("status는 'in-progress' 또는 'completed'여야 합니다.")
 ];
-
-//내 미션 목록 조회 커서 검증
-export const validateMyMissionCursorQuery = [
-    query('cursor')
-        .optional()
-        .isString().withMessage('커서(cursor)는 문자열이어야 합니다.')
-        .matches(/^\d+$/).withMessage('커서(cursor)는 숫자 형식의 문자열이어야 합니다.')
-];
-
-
-export const checkMissionIsInProgress = async (req, res, next) => {
-    try {
-        const { missionId, userId } = req.params;
-        
-        const missionStatus = await getUserMissionStatus(userId, missionId);
-
-        if (!missionStatus) {
-            throw new CustomError({ name: 'MISSION_NOT_CHALLENGING', message: '이 유저는 해당 미션에 도전하지 않았습니다.' });
-        }
-        if (missionStatus.status === true) {
-            throw new CustomError({ name: 'MISSION_ALREADY_COMPLETED' });
-        }
-        next();
-    } catch (err) {
-        next(err);
-    }
-};

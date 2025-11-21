@@ -1,13 +1,10 @@
 import { prisma } from "../db.config.js";
 import { getRegionIdFromCode } from '#Repository/region.repository.js';
-import bcrypt from 'bcrypt';
 import CustomError from '#Middleware/error/customError.js';
-import { Prisma } from '@prisma/client';
 
 //유저 추가
 export const addUser = async (data) => {
   try {
-    const hashedPassword = await bcrypt.hash(data.password, 10);
 
     const newUser = await prisma.$transaction(async (tx) => {
       
@@ -27,7 +24,7 @@ export const addUser = async (data) => {
       const createdUser = await tx.user.create({
         data: {
           email: data.email,
-          password: hashedPassword,
+          password: data.hashedPassword,
           name: data.name,
           gender: data.gender,
           birthday: data.birthday,
@@ -55,6 +52,17 @@ export const addUser = async (data) => {
 
         await tx.userTerm.createMany({
           data: termsData
+        });
+      }
+
+      if (data.favoriteFoodIds && data.favoriteFoodIds.length > 0) {
+        const favoriteFoodData = data.favoriteFoodIds.map(foodId => ({
+          userId: createdUser.id,
+          foodId: foodId
+        }));
+
+        await tx.userFavorite.createMany({
+          data: favoriteFoodData
         });
       }
 
@@ -130,21 +138,21 @@ export const getProfileIdFromUserId = async (userId) => {
     }
 }
 
-//좋아하는 음식 설정
-export const setfavoriteFood = async (userId, foodId) => {
-  try {
-    await prisma.userFavorite.create({
-      data: {
-        userId: userId,
-        foodId: foodId
-      }
-    });
-    return;
-  } catch (err) {
-    console.error(err);
-    throw new CustomError({ name: 'DATABASE_ERROR' });
-  }
-};
+// //좋아하는 음식 설정(미사용)
+// export const setfavoriteFood = async (userId, foodId) => {
+//   try {
+//     await prisma.userFavorite.create({
+//       data: {
+//         userId: userId,
+//         foodId: foodId
+//       }
+//     });
+//     return;
+//   } catch (err) {
+//     console.error(err);
+//     throw new CustomError({ name: 'DATABASE_ERROR' });
+//   }
+// };
 
 //RefreshToken 업데이트
 export const updateRefreshToken = async (userId, refreshToken) => {

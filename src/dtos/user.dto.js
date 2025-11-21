@@ -26,61 +26,6 @@ export const bodyToToken = (body) => {
   return body.refreshToken; //필수 
 };
 
-export const responseForMyReviews = ({ reviews, nextCursor, limit }) => {
-    const formattedReviews = reviews.map(review => ({
-        reviewId: Number(review.id),
-        storeName: review.store.name,
-        starRating: review.starRating,
-        content: review.content,
-        createdAt: review.createdAt,
-        photos: review.photos.map(photo => photo.link)
-    }));
-
-    const hasNextPage = nextCursor !== null; 
-    
-    return {
-        "status": "success",
-        "data": {
-            "reviews": formattedReviews,
-            "cursor": {
-                "nextCursor": nextCursor,
-                "pageSize": limit,
-                "hasNextPage": hasNextPage
-            }
-        }
-    };
-};
-
-export const responseForMyMissions = ({ userMissions, nextCursor, limit }) => {
-    const formattedMissions = userMissions.map(userMission => ({
-        userMissionId: Number(userMission.id),
-        status: userMission.status ? 'completed' : 'in-progress',
-        missionDetails: {
-            missionId: Number(userMission.mission.id),
-            storeId: Number(userMission.mission.store.id),
-            reward: userMission.mission.reward,
-            description: userMission.mission.description,
-            deadline: userMission.mission.deadline,
-            storeName: userMission.mission.store.name
-        },
-        challengedAt: userMission.createdAt
-    }));
-
-    const hasNextPage = nextCursor !== null; 
-    
-    return {
-        "status": "success",
-        "data": {
-            "missions": formattedMissions,
-            "cursor": {
-                "nextCursor": nextCursor,
-                "pageSize": limit,
-                "hasNextPage": hasNextPage
-            }
-        }
-    };
-};
-
 // export const responseFromUser = ({ user, favoriteFood }) => {
 //   if (!user) {
 //     return null;

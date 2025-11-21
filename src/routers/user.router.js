@@ -1,15 +1,17 @@
+//Express
 import express from 'express';
-
 //Middlewares
 import checkValidation from '#Middleware/validation/validation.middleware.js';
 import { authMiddleware } from '#Middleware/auth.middleware.js';
-
 //Controllers
-import { handleUserSignUp, handleUserLogin, handleUserToken, handleGetMyReviews, handleGetMyMissions } from '#Controller/user.controller.js';
-
+import { handleUserSignUp, handleUserLogin, handleUserToken } from '#Controller/user.controller.js';
+import { handleGetMyReviews } from '#Controller/review.controller.js';
+import { handleGetMyMissions } from '#Controller/mission.controller.js';
 //Validations
-import { registerValidation, loginValidation, refreshTokenValidation, validateMyReviewsCursorQuery, validateLimitQuery  } from '#Middleware/validation/user.validation.js';
-import { validateMyMissionStatusQuery, validateMyMissionCursorQuery } from '#Middleware/validation/mission.validation.js';
+import { registerValidation, loginValidation, refreshTokenValidation } from '#Middleware/validation/user.validation.js';
+import { validateLimitQuery } from '#Middleware/validation/common.validation.js';
+import { validateReviewCursorQuery } from '#Middleware/validation/review.validation.js';
+import { validateMissionCursorQuery, validateMyMissionStatusQuery } from '#Middleware/validation/mission.validation.js';
 
 const router = express.Router();
 
@@ -37,7 +39,7 @@ router.post('/token',
 // 내가 작성한 리뷰 목록 조회 API
 router.get('/reviews',
     authMiddleware,
-    validateMyReviewsCursorQuery,
+    validateReviewCursorQuery,
     validateLimitQuery,
     checkValidation,
     handleGetMyReviews
@@ -47,7 +49,7 @@ router.get('/reviews',
 router.get('/missions',
     authMiddleware,
     validateMyMissionStatusQuery,
-    validateMyMissionCursorQuery,
+    validateMissionCursorQuery,
     validateLimitQuery,
     checkValidation,
     handleGetMyMissions

@@ -1,17 +1,21 @@
+//Express
 import express from 'express';
-
 // Middlewares
-import { authMiddleware, optionalAuthMiddleware, checkStoreOwnership } from '#Middleware/auth.middleware.js';
-import { upload } from '#Middleware/upload.middleware.js';
 import checkValidation from '#Middleware/validation/validation.middleware.js';
-
+import { authMiddleware, optionalAuthMiddleware } from '#Middleware/auth.middleware.js';
+import { checkStoreExists, checkStoreOwnership } from '#Middleware/store.middleware.js';
+import { checkMissionExists, checkIsNotChallenging, checkMissionIsInProgress } from '#Middleware/mission.middleware.js';
+import { upload } from '#Middleware/upload.middleware.js';
 // Controllers
-import { handleStoreAdd,handleReviewAdd, handleMissionAdd, handleChallengeMission, handleGetStoreReviews, handleGetStoreMissions, handleCompleteMission } from '#Controller/store.controller.js';
-
+import { handleStoreAdd } from '#Controller/store.controller.js';
+import { handleGetStoreReviews, handleReviewAdd } from '#Controller/review.controller.js';
+import { handleChallengeMission, handleCompleteMission, handleMissionAdd, handleGetStoreMissions } from '#Controller/mission.controller.js';
 // Validations
-import { addReviewValidation, addStoreValidation, checkStoreExists, validateStoreId, validateReviewCursorQuery, validateLimitQuery, validateSortQuery} from '#Middleware/validation/store.validation.js';
+import { validateLimitQuery } from '#Middleware/validation/common.validation.js';
 import { validateUserIdParam } from '#Middleware/validation/user.validation.js';
-import { addMissionValidation, checkMissionExists, checkIsNotChallenging,validateMissionId, validateMissionSortQuery, validateMissionCursorQuery, checkMissionIsInProgress } from '#Middleware/validation/mission.validation.js';
+import { validateStoreId, addStoreValidation } from '#Middleware/validation/store.validation.js';
+import { validateReviewCursorQuery, addReviewValidation, validateReviewSortQuery } from '#Middleware/validation/review.validation.js';
+import { validateMissionId, addMissionValidation, validateMissionCursorQuery, validateMissionSortQuery  } from '#Middleware/validation/mission.validation.js';
 
 const router = express.Router();
 
@@ -21,7 +25,7 @@ router.get('/:storeId/reviews',
     checkStoreExists,
     validateReviewCursorQuery,
     validateLimitQuery,
-    validateSortQuery,
+    validateReviewSortQuery,
     checkValidation,
     handleGetStoreReviews
 );

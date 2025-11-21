@@ -10,11 +10,13 @@ const ErrorMiddleware = (err, req, res, next) => {
   const message = err.message || (error && error.message) || Errors.Unhandled_Error.message;
   const code = (error && error.code) || Errors.Unhandled_Error.code;
   res.status(code).json({
-    success: false,
-    code,
-    name,
-    message,
-    description,
+    resultType: "FAIL",
+    error:{
+      errorCode: name,
+      message,
+      description
+    },
+    success: null,
   });
 };
 
