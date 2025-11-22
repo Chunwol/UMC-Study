@@ -24,7 +24,7 @@ export const addUser = async (data) => {
       const createdUser = await tx.user.create({
         data: {
           email: data.email,
-          password: data.hashedPassword,
+          password: data.password,
           name: data.name,
           gender: data.gender,
           birthday: data.birthday,
