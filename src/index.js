@@ -8,11 +8,13 @@ import compression from 'compression';
 import helmet from 'helmet';
 import { fileURLToPath } from 'url';
 import rateLimit from 'express-rate-limit';
-
+import swaggerUi from 'swagger-ui-express';
 import CustomError from '#Middleware/error/customError.js';
 import ErrorMiddleware from '#Middleware/error/errorMiddleware.js';
 import router from '#Router/index.js';
 import { connect } from './db.config.js';
+import passport from 'passport'; // 추가
+import './auth.config.js'; // Passport 설정 파일 로드
 
 dotenv.config();
 
@@ -41,8 +43,20 @@ app.use(compression({
   threshold: 512
 }));
 
+app.use(passport.initialize());
+
 app.use('/api', router);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+app.use(
+    "/docs",
+    swaggerUi.service,
+    swaggerUi.setup({}, {
+        swaggerOptions: {
+            url: "/openapi.json",
+        },
+    })
+);
 
 app.use((req, res, next) => {
   next(new CustomError({ name: 'NOT_FOUND' }));
