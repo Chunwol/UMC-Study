@@ -8,13 +8,14 @@ import compression from 'compression';
 import helmet from 'helmet';
 import { fileURLToPath } from 'url';
 import rateLimit from 'express-rate-limit';
+import swaggerAutogen from 'swagger-autogen';
 import swaggerUi from 'swagger-ui-express';
 import CustomError from '#Middleware/error/customError.js';
 import ErrorMiddleware from '#Middleware/error/errorMiddleware.js';
 import router from '#Router/index.js';
 import { connect } from './db.config.js';
-import passport from 'passport'; // 추가
-import './auth.config.js'; // Passport 설정 파일 로드
+import passport from 'passport';
+import './auth.config.js';
 
 dotenv.config();
 
@@ -43,14 +44,9 @@ app.use(compression({
   threshold: 512
 }));
 
-app.use(passport.initialize());
-
-app.use('/api', router);
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
 app.use(
     "/docs",
-    swaggerUi.service,
+    swaggerUi.serve,
     swaggerUi.setup({}, {
         swaggerOptions: {
             url: "/openapi.json",
@@ -58,8 +54,64 @@ app.use(
     })
 );
 
-app.use((req, res, next) => {
-  next(new CustomError({ name: 'NOT_FOUND' }));
+app.get("/openapi.json", async (req, res, next) => {
+    const options = {
+        openapi: "3.0.0",
+        disableLogs: true,
+        writeOutputFile: false,
+    };
+    const outputFile = "/dev/null"; 
+    const routes = [
+        "./src/routers/index.js", 
+    ];
+    
+    const doc = {
+        info: {
+            title: "UMC Study API",
+            description: "UMC 9기 Node.js 스터디 API 명세서입니다.",
+            version: "1.0.0",
+        },
+        host: "localhost:80",
+        basePath: "/api",
+        schemes: ["http"],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: "http",
+                    scheme: "bearer",
+                    bearerFormat: "JWT",
+                },
+            },
+        },
+        definitions: {
+            SuccessResponse: {
+                type: "object",
+                properties: {
+                    resultType: { type: "string", example: "SUCCESS" },
+                    error: { type: "object", nullable: true, example: null },
+                    success: { type: "object" }
+                }
+            },
+            ErrorResponse: {
+                type: "object",
+                properties: {
+                    resultType: { type: "string", example: "FAIL" },
+                    error: {
+                        type: "object",
+                        properties: {
+                            errorCode: { type: "string", example: "NOT_FOUND" },
+                            message: { type: "string", example: "에러 메시지" },
+                            description: { type: "string", example: "상세 설명" }
+                        }
+                    },
+                    success: { type: "object", nullable: true, example: null }
+                }
+            }
+        }
+    };
+
+    const result = await swaggerAutogen(options)(outputFile, routes, doc);
+    res.json(result ? result.data : null);
 });
 
 app.use((req, res, next) => {
@@ -67,6 +119,15 @@ app.use((req, res, next) => {
     return res.json({ resultType: "SUCCESS", error: null, success });
   };
   next();
+});
+
+app.use(passport.initialize());
+
+app.use('/api', router);
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+app.use((req, res, next) => {
+  next(new CustomError({ name: 'NOT_FOUND' }));
 });
 
 app.use(ErrorMiddleware);

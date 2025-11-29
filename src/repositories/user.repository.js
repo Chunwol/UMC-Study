@@ -33,7 +33,7 @@ export const createUserForSocial = async (data) => {
                 password: null,
                 isVerified: false,
                 profile: {
-                    create: { nickname: `user_${Date.now()}` }
+                    create: { nickname: `user_${Math.random().toString(36).substring(2, 10)}` }
                 },
                 socialAccounts: {
                     create: {

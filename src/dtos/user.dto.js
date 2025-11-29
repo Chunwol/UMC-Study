@@ -26,21 +26,32 @@ export const bodyToToken = (body) => {
   return body.refreshToken; //필수 
 };
 
-// export const responseFromUser = ({ user, favoriteFood }) => {
-//   if (!user) {
-//     return null;
-//   }
-//   const favoriteFoodIds = favoriteFood.map(pref => pref.id);
+export const bodyToUserInfoUpdate = (body) => {
+    return {
+        name: body.name,
+        gender: body.gender,
+        birthday: body.birthday ? new Date(body.birthday) : undefined,
+        addressCode: body.addressCode,
+        addressDetail: body.addressDetail,
+        phoneNumber: body.phoneNumber,
+        favoriteFoodIds: body.favoriteFoodIds,
+        terms: body.terms
+    };
+};
 
-//   return {
-//     id: user.id,
-//     email: user.email,
-//     name: user.name,
-//     gender: user.gender,
-//     birthday: user.birthday,
-//     addressCode: user.addressCode,
-//     addressDetail: user.addressDetail,
-//     phoneNumber: user.phoneNumber,
-//     favoriteFoodIds: preferenceNames,
-//   };
-// };
+export const responseFromUserInfoUpdate = (user) => {
+    return {
+        userId: Number(user.id),
+        email: user.email,
+        name: user.name,
+        isVerified: user.isVerified
+    };
+};
+
+export const responseFromSocialLogin = (tokens, user) => {
+    return {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        needsAdditionalInfo: !user.isVerified
+    };
+};
