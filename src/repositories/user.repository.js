@@ -1,90 +1,169 @@
 import { prisma } from "../db.config.js";
 import { getRegionIdFromCode } from '#Repository/region.repository.js';
 import CustomError from '#Middleware/error/customError.js';
+import pkg from '@prisma/client';
+const { Prisma } = pkg;
 
-//유저 추가
-export const addUser = async (data) => {
+//소셜 계정 정보로 User 찾기
+export const findUserBySocial = async (provider, socialId) => {
   try {
-
-    const newUser = await prisma.$transaction(async (tx) => {
-      
-      const existingUser = await tx.user.findUnique({
-        where: { email: data.email }
-      });
-
-      if (existingUser) {
-        throw new CustomError({ name: 'EMAIL_ALREADY_EXISTS' });
-      }
-
-      const regionId = await getRegionIdFromCode(data.addressCode, tx);
-      if (!regionId) {
-        throw new CustomError({ name: 'BAD_REQUEST', message: '제공된 주소에 해당하는 지역 정보를 찾을 수 없습니다.' });
-      }
-
-      const createdUser = await tx.user.create({
-        data: {
-          email: data.email,
-          password: data.password,
-          name: data.name,
-          gender: data.gender,
-          birthday: data.birthday,
-          regionId: regionId,
-          addressDetail: data.addressDetail,
-          refreshToken: null
-        }
-      });
-
-      const defaultNickname = `user_${createdUser.id}`;
-      await tx.profile.create({
-        data: {
-          userId: createdUser.id,
-          nickname: defaultNickname,
-          imageUrl: null
-        }
-      });
-
-      if (data.terms && data.terms.length > 0) {
-        const termsData = data.terms.map(term => ({
-          userId: createdUser.id,
-          termId: term.termId,
-          isAgreed: term.isAgreed
-        }));
-
-        await tx.userTerm.createMany({
-          data: termsData
-        });
-      }
-
-      if (data.favoriteFoodIds && data.favoriteFoodIds.length > 0) {
-        const favoriteFoodData = data.favoriteFoodIds.map(foodId => ({
-          userId: createdUser.id,
-          foodId: foodId
-        }));
-
-        await tx.userFavorite.createMany({
-          data: favoriteFoodData
-        });
-      }
-
-      return createdUser;
+    const socialAccount = await prisma.socialAccount.findUnique({
+      where: {
+          provider_socialId: {
+              provider: provider,
+              socialId: socialId
+          }
+      },
+      include: { user: true }
     });
-
-    return newUser.id;
-
+    return socialAccount ? socialAccount.user : null;
   } catch (err) {
-    if (err instanceof CustomError) {
-        throw err;
-    }
-    console.error(err);
     throw new CustomError({ name: 'DATABASE_ERROR' });
   }
+};
+
+//소셜 로그인 시 신규 유저 생성
+export const createUserForSocial = async (data) => {
+  try {
+    const newUser = await prisma.$transaction(async (tx) => {
+        const createdUser = await tx.user.create({
+            data: {
+                email: data.email,
+                name: data.name,
+                password: null,
+                isVerified: false,
+                profile: {
+                    create: { nickname: `user_${Math.random().toString(36).substring(2, 10)}` }
+                },
+                socialAccounts: {
+                    create: {
+                        provider: data.provider,
+                        socialId: data.socialId
+                    }
+                }
+            }
+        });
+        return createdUser;
+    });
+    return newUser;
+  } catch (err) {
+    throw new CustomError({ name: 'DATABASE_ERROR' });
+  }
+};
+
+//기존 유저에 소셜 계정 연결
+export const linkSocialAccount = async (userId, provider, socialId) => {
+    try {
+        await prisma.socialAccount.create({
+            data: {
+                userId: BigInt(userId),
+                provider: provider,
+                socialId: socialId
+            }
+        });
+    } catch (err) {
+        throw new CustomError({ name: 'DATABASE_ERROR' });
+    }
+};
+
+//유저 정보 업데이트 (추가 정보 입력용)
+export const updateUserInfo = async (userId, data) => {
+    try {
+        const updatedUser = await prisma.user.update({
+            where: { id: BigInt(userId) },
+            data: {
+                ...data,
+                isVerified: true
+            }
+        });
+        return updatedUser;
+    } catch (err) {
+        throw new CustomError({ name: 'DATABASE_ERROR' });
+    }
+};
+
+//유저 추가 (일반 회원가입)
+export const addUser = async (data) => {
+    try {
+        const newUser = await prisma.$transaction(async (tx) => {
+            const existingUser = await tx.user.findUnique({
+                where: { email: data.email }
+            });
+
+            if (existingUser) {
+                throw new CustomError({ name: 'EMAIL_ALREADY_EXISTS' });
+            }
+
+            const regionId = await getRegionIdFromCode(data.addressCode, tx);
+            if (!regionId) {
+                throw new CustomError({ name: 'BAD_REQUEST', message: '제공된 주소에 해당하는 지역 정보를 찾을 수 없습니다.' });
+            }
+
+            const createdUser = await tx.user.create({
+                data: {
+                    email: data.email,
+                    password: data.password,
+                    name: data.name,
+                    gender: data.gender,
+                    birthday: data.birthday,
+                    regionId: regionId,
+                    addressDetail: data.addressDetail,
+                    refreshToken: null,
+                    isVerified: true
+                }
+            });
+
+            const defaultNickname = `user_${createdUser.id}`;
+            await tx.profile.create({
+                data: {
+                    userId: createdUser.id,
+                    nickname: defaultNickname,
+                    imageUrl: null
+                }
+            });
+
+            if (data.terms && data.terms.length > 0) {
+                const termsData = data.terms.map(term => ({
+                    userId: createdUser.id,
+                    termId: term.termId,
+                    isAgreed: term.isAgreed
+                }));
+
+                await tx.userTerm.createMany({
+                    data: termsData
+                });
+            }
+
+            if (data.favoriteFoodIds && data.favoriteFoodIds.length > 0) {
+                const favoriteFoodData = data.favoriteFoodIds.map(foodId => ({
+                    userId: createdUser.id,
+                    foodId: foodId
+                }));
+
+                await tx.userFavorite.createMany({
+                    data: favoriteFoodData
+                });
+            }
+
+            return createdUser;
+        });
+
+        return newUser.id;
+
+    } catch (err) {
+        if (err instanceof CustomError) {
+            throw err;
+        }
+        console.error(err);
+        throw new CustomError({ name: 'DATABASE_ERROR' });
+    }
 };
 
 //유저ID로 유저검색
 export const getUserFromId = async (userId) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: BigInt(userId) },
     });
     return user; 
   } catch (err) {
@@ -128,7 +207,7 @@ export const getUserIdFromToken = async (token) => {
 export const getProfileIdFromUserId = async (userId) => {
     try {
       const profile = await prisma.profile.findUnique({
-        where: { userId: userId },
+        where: { id: BigInt(userId) },
         select: { id: true }
       });
       return profile ? profile.id : null;
@@ -158,7 +237,7 @@ export const getProfileIdFromUserId = async (userId) => {
 export const updateRefreshToken = async (userId, refreshToken) => {
   try {
     const updatedUser = await prisma.user.update({
-      where: { id: userId },
+      where: { id: BigInt(userId) },
       data: { refreshToken: refreshToken }
     });
     return !!updatedUser;

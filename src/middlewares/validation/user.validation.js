@@ -80,3 +80,31 @@ export const validateUserIdParam = [
         .isInt({ min: 1 }).withMessage('유저 ID(userId)는 1 이상의 숫자여야 합니다.')
         .toInt()
 ];
+
+// 유저 정보 수정 검증
+export const validateUserInfoUpdate = [
+    body('name')
+        .optional()
+        .isString().notEmpty().withMessage('이름은 문자열이어야 합니다.'),
+    
+    body('gender')
+        .optional()
+        .isIn(['male', 'female']).withMessage('성별은 male 또는 female 이어야 합니다.'),
+        
+    body('birthday')
+        .optional()
+        .isISO8601().withMessage('날짜 형식(YYYY-MM-DD)이 올바르지 않습니다.'),
+        
+    body('addressCode')
+        .optional()
+        .isString()
+        .isLength({ min: 10, max: 10 }).withMessage('주소코드는 10자리여야 합니다.'),
+        
+    body('addressDetail')
+        .optional()
+        .isString(),
+        
+    body('phoneNumber')
+        .optional()
+        .isString().withMessage('전화번호 형식이 올바르지 않습니다.')
+];

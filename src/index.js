@@ -14,6 +14,8 @@ import CustomError from '#Middleware/error/customError.js';
 import ErrorMiddleware from '#Middleware/error/errorMiddleware.js';
 import router from '#Router/index.js';
 import { connect } from './db.config.js';
+import passport from 'passport';
+import './auth.config.js';
 
 dotenv.config();
 
@@ -60,7 +62,9 @@ app.get("/openapi.json", async (req, res, next) => {
     };
     const outputFile = "/dev/null"; 
     const routes = [
-        "./src/routers/index.js", 
+        "./src/routers/index.js",
+        "./src/routers/user.router.js", 
+        "./src/routers/store.router.js"
     ];
     
     const doc = {
@@ -118,6 +122,8 @@ app.use((req, res, next) => {
   };
   next();
 });
+
+app.use(passport.initialize());
 
 app.use('/api', router);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

@@ -19,12 +19,16 @@ export const checkStoreExists = async (req, res, next) => {
 //가게 주인 확인
 export const checkStoreOwnership = async (req, res, next) => {
     try {
-        const loggedInUserId = req.user.id;
+        const userId = req.user.id;
         const storeId = req.params.storeId;
         
         const ownerId = await getOwnerIdFromStoreId(storeId);
 
-        if (loggedInUserId !== ownerId) {
+        if (!ownerId) {
+             throw new CustomError({ name: 'STORE_NOT_FOUND' });
+        }
+
+        if (ownerId.toString() !== userId.toString()) {
             throw new CustomError({ name: 'FORBIDDEN' });
         }
         next();
