@@ -33,11 +33,14 @@ passport.use(new LocalStrategy({
     }
 }));
 
+const callbackPath = '/api/user/google/callback';
+const googleCallbackURL = process.env.GOOGLE_CALLBACK_URL || `http://localhost:${process.env.PORT || 80}${callbackPath}`;
+
 // Google Strategy
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://127.0.0.1:80/api/user/google/callback",
+    callbackURL: googleCallbackURL,
     scope: ['email', 'profile']
 }, async (accessToken, refreshToken, profile, done) => {
     try {
