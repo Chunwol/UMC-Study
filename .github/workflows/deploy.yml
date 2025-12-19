@@ -23,7 +23,7 @@ jobs:
       - name: Create .env file
         run: |
           touch .env
-          echo "NODE_ENV=${{ secrets.NODE_ENV }}"" >> .env
+          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
           echo "PORT=80" >> .env
           
           # Secrets
@@ -59,7 +59,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "./*"
           target: "/opt/app"
-          rm: true
+          rm: false
 
       # 4. 원격 명령어 실행
       - name: Execute remote commands
