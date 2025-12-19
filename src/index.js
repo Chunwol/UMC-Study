@@ -62,7 +62,9 @@ app.get("/openapi.json", async (req, res, next) => {
     };
     const outputFile = "/dev/null"; 
     const routes = [
-        "./src/routers/index.js", 
+        "./src/routers/index.js",
+        "./src/routers/user.router.js", 
+        "./src/routers/store.router.js"
     ];
     
     const doc = {
