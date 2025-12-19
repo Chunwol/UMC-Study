@@ -60,7 +60,7 @@ export const handleUserSignUp = async (req, res, next) => {
     const userId = await userSignUp(bodyToUser(req.body));
     const tokens = await tokenSign(userId);
 
-    res.status(StatusCodes.CREATED).json({ "status": "success", data: tokens });
+    res.status(StatusCodes.CREATED).success(tokens);
   } catch (err) {
     next(err);
   }
