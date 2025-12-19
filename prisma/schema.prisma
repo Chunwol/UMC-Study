@@ -86,14 +86,13 @@ model SocialAccount {
   id          BigInt   @id @default(autoincrement())
   userId      BigInt   @map("user_id")
   provider    String   @db.VarChar(20) // 'GOOGLE', 'NAVER', 'KAKAO'
-  socialId    String   @map("social_id") @db.VarChar(255) // 소셜 서비스의 고유 ID (sub 등)
-  accessToken String?  @map("access_token") @db.Text // 필요하다면 저장 (선택)
+  socialId    String   @map("social_id") @db.VarChar(255)
+  accessToken String?  @map("access_token") @db.Text
   createdAt   DateTime @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt   DateTime @updatedAt @map("updated_at") @db.DateTime(0)
 
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // provider와 socialId의 조합은 유일해야 함 (한 소셜 계정이 중복 등록 불가)
   @@unique([provider, socialId])
   @@map("social_account")
 }

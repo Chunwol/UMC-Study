@@ -1,0 +1,98 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Check prisma has changes
+        uses: dorny/paths-filter@v3
+        id: paths-filter
+        with:
+          filters: |
+            prisma: ["prisma/**"]
+
+      - name: Create .env file
+        run: |
+          touch .env
+          echo "NODE_ENV=${{ secrets.NODE_ENV }}"" >> .env
+          echo "PORT=80" >> .env
+          
+          # Secrets
+          echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" >> .env
+          echo "REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}" >> .env
+          
+          # DB 설정
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_NAME=umc_db" >> .env
+          echo "DB_PORT=3306" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          
+          # 암호화 설정
+          echo "PW_ENCRYPTION_ALGORITHM=encryption algorithm" >> .env
+          echo "PW_ENCRYPTION_SALTSIZE=16" >> .env
+          echo "PW_ENCRYPTION_ITERATION=100000" >> .env
+          echo "PW_ENCRYPTION_SIZE=64" >> .env
+          
+          # DATABASE_URL
+          echo "DATABASE_URL=mysql://${{ secrets.DB_USERNAME }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:3306/umc_db" >> .env
+          
+          # 구글 로그인
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+
+      # 3. 파일 전송
+      - name: Copy files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "./*"
+          target: "/opt/app"
+          rm: true
+
+      # 4. 원격 명령어 실행
+      - name: Execute remote commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /opt/app
+
+            npm install
+            npx prisma generate
+            
+            if [ "${{ steps.paths-filter.outputs.prisma }}" == "true" ]; then
+              echo "Prisma changes detected. Running migration..."
+              npx prisma migrate deploy
+            fi
+
+            echo "[Unit]
+            Description=UMC 9th Project
+            After=network.target
+
+            [Service]
+            User=ubuntu
+            WorkingDirectory=/opt/app
+            ExecStart=/usr/bin/npm run start
+            Restart=always
+            EnvironmentFile=/opt/app/.env
+
+            [Install]
+            WantedBy=multi-user.target" | sudo tee /etc/systemd/system/app.service
+
+            sudo systemctl daemon-reload
+            sudo systemctl enable app
+            sudo systemctl restart app
